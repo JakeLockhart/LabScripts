@@ -31,9 +31,9 @@ function Result = R2P_PowerMeasurement
     for i = 1:SystemProperties.FilePath.Data.Length                                                                                 % Begin for loop to iterate over individual files
         SystemProperties.FilePath.Data.Name{i} = erase(SystemProperties.FilePath.Folder(i).name,".txt");                            % Create names of individual files based only on MScan wavelength
             if SystemProperties.FilePath.Data.Name(i) == "Notes"; continue; end
-            SystemProperties.ImportOptions = detectImportOptions(fullfile(SystemProperties.FilePath.Data.Address, SystemProperties.FilePath.Folder(i).name));
-            SystemProperties.ImportOptions = setvaropts(SystemProperties.ImportOptions, 'Var1', 'InputFormat', 'MM/dd/yyyy hh:mm:ss.SSS a');
-        R2Pm.RawData{i} = readtable(fullfile(SystemProperties.FilePath.Data.Address, SystemProperties.FilePath.Folder(i).name),SystemProperties.ImportOptions);    % Read data from individual files (full file path for each file contained)
+            SystemProperties.ImportOptions = detectImportOptions(fullfile(SystemProperties.FilePath.Data.Address, SystemProperties.FilePath.Folder(i).name));   % Fix MM/dd/yyyy format
+            SystemProperties.ImportOptions = setvaropts(SystemProperties.ImportOptions, 'Var1', 'InputFormat', 'MM/dd/yyyy hh:mm:ss.SSS a');                    % Fix MM/dd/yyyy format
+        R2Pm.RawData{i} = readtable(fullfile(SystemProperties.FilePath.Data.Address, SystemProperties.FilePath.Folder(i).name),SystemProperties.ImportOptions); % Read data from individual files (full file path for each file contained)
     
         R2Pm.Data{i} = table;                                                                               % Create table for processing data 
             R2Pm.Data{i}.DateTime = R2Pm.RawData{i}.Var1;                                                   % Insert time (DateTime format) variable into table
@@ -65,7 +65,7 @@ function Result = R2P_PowerMeasurement
         if SystemProperties.FilePath.Data.Name(i) == "Notes"
             continue
         end
-        figure(i)                                                                                                                               % Create Plots
+        figure(i)                                                                                                                                   % Create Plots
         plot(R2Pm.Data{i}.DateTime, R2Pm.Data{i}.Intensity, 'Color', [0 0.4470 0.7410]); hold on;
         plot(R2Pm.Results{i}.Time, R2Pm.Results{i}.OutputIntensity, 'red*'); hold on;
         plot(R2Pm.Analysis{i}.Time,R2Pm.Analysis{i}.OutputIntensity,'k.','MarkerSize',20); hold on;
@@ -74,11 +74,18 @@ function Result = R2P_PowerMeasurement
         for j = 1:length(R2Pm.Analysis{i}.InterestValues)
              xline(R2Pm.Analysis{i}.Time(j),'-',{"Input Laser Power = " + num2str(R2Pm.Analysis{i}.InterestValues(j))+'%'})
         end
-    
-        R2Pm.Final.RawFinal.Properties.VariableNames(1) = "Input Laser Intensity [%]";                                                             % Display results
+        R2Pm.Final.RawFinal.Properties.VariableNames(1) = "Input Laser Intensity [%]";                                                              % Display results
         R2Pm.Final.VarList = sprintf('Var%d',i+1);
         R2Pm.Final.RawFinal = renamevars(R2Pm.Final.RawFinal,R2Pm.Final.VarList, SystemProperties.FilePath.Data.Name{i} + " Output Intensity [mW]");
-    
     end
-        Result = R2Pm.Final.RawFinal;
+    for i = 1:length(R2Pm.Final.RawFinal.Properties.VariableNames)
+        R2Pm.Final.Names(i) = string(cell2mat(R2Pm.Final.RawFinal.Properties.VariableNames(i)));
+        if R2Pm.Final.Names(i) == "Input Laser Intensity [%]"
+            continue
+        end
+        R2Pm.Final.IsolatedNames(i) = str2double(erase(erase(R2Pm.Final.Names(i),"2024_12_10_PM_LogData_")," Output Intensity [mW]"));
+    end
+    [~,index] = sort(R2Pm.Final.IsolatedNames);
+    Result = R2Pm.Final.RawFinal(:,R2Pm.Final.Names(index));
+    
     end
