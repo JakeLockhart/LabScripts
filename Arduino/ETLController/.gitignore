@@ -1,0 +1,15 @@
+# Ignore PlatformIO build system folders
+.pio/
+.vscode/
+include/
+lib/
+test/
+
+# Ignore other IDE-specific or temporary files
+*.bin
+*.elf
+*.hex
+*.log
+*.pid
+*.json
+*.platformio/
