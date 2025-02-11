@@ -18,7 +18,7 @@
 %       intensity. The summary table will provide data that can be copied
 %       to the excel sheet on google drive to record the R2P.
 
-function Result = R2P_PowerMeasurement
+function Result = PowerMeasurement
     %% System Properties
     SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');                          % Choose folder path location
         SystemProperties.FilePath.Address = SystemProperties.FilePath.GetFolder + "\*.txt";         % Convert to filepath
