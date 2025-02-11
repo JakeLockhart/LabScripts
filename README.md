@@ -2,7 +2,7 @@
 Scripts for Drew Lab by Jake Lockhart
 
 ## Arduino
-- **ETLController**: Control the imaging plane of the electric tuneable lens based on a TTL pulse  
+- **ETLController_SG**: Control the imaging plane of the electric tuneable lens based on a TTL pulse. Original created by S. Garborg.
 - **PockelCellController**: Modulate the X3 laser intensity in response to a TTL pulse  
 
 ## Functions
