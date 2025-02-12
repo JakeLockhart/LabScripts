@@ -11,7 +11,7 @@ struct OScope {
 
 // Define table array
 // Input Laser Intensity [%] | Noise Floor | Noise Peak | Voltage Gap (Between Base & Peak) | Voltage Range (Base - Peak) [mV]
-OScope data[] = {
+OScope data_OScope[] = {
 {0,     {104,   -1,     -1,     60.8}},
 {10,    {104,   76,     34,     200 }},
 {20,    {104,   88,     120,    296 }},

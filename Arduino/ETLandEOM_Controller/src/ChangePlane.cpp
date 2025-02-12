@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#ifndef ChangePlane_h
+#define ChangePlane_h
 
 void ChangePlane(int CurrentImagingPlane, int TotalImagingPlanes,int TTLPulse_ETL, int Delay) {
     if (CurrentImagingPlane == 1) {
@@ -11,3 +13,5 @@ void ChangePlane(int CurrentImagingPlane, int TotalImagingPlanes,int TTLPulse_ET
         CurrentImagingPlane--;
     }
 }
+
+#endif
