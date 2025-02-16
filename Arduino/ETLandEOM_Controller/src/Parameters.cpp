@@ -6,9 +6,9 @@
     // How many imaging planes will you be imaging?
     // What are the imaging plane depths (um)?
 int Wavelength = 920;
-int TotalImagingPlanes = 4; 
-int ImagingPlaneDepths[MAX_Planes] = {0, 50, 100, 250};
-int InputIntensity[MAX_Planes] = {20, 33, 44, 100}; // TO BE REPLACED WITH A SPENCER'S FUNCTION!!!!
+int TotalImagingPlanes = 3; 
+int ImagingPlaneDepths[MAX_Planes] = {0, 20, 66};
+int InputIntensity[MAX_Planes] = {20, 100, 44}; // TO BE REPLACED WITH A SPENCER'S FUNCTION!!!!
 
 //---------------------- Do Not Edit --------------------------------------------------------------
 // Arduino Board Pins (TTL Input/Output)
