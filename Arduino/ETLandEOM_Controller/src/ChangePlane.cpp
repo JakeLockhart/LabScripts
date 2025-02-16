@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#ifndef ChangePlane_h
-#define ChangePlane_h
+#include "ChangePlane.h"
+#include "Parameters.h"
 
-void ChangePlane(int CurrentImagingPlane, int TotalImagingPlanes,int TTLPulse_ETL, int Delay) {
+void ChangePlane() {
     if (CurrentImagingPlane == 1) {
         digitalWrite(TTLPulse_ETL, HIGH);
         delayMicroseconds(Delay);
@@ -13,5 +13,3 @@ void ChangePlane(int CurrentImagingPlane, int TotalImagingPlanes,int TTLPulse_ET
         CurrentImagingPlane--;
     }
 }
-
-#endif

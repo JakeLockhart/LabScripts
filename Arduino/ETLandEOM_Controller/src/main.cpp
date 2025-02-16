@@ -3,6 +3,7 @@
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
 #include "PowerInterpolation.h"
+#include "ChangePlane.h"
 //  This script is designed to control both the ETL and the EOM (Pockel Cell) in response to TTL pulses.
 //      Parameters:
 //          - Total imaging planes
@@ -18,6 +19,12 @@
 
 void setup() {
     Serial.begin(9300);
+    
+    // Pin Setup 
+        pinMode(NewFrame_MScan, INPUT);
+        pinMode(TTLPulse_ETL, OUTPUT);
+        pinMode(TTLPulse_EOM, OUTPUT);
+
     // Initialization
         float LaserIntensity[TotalImagingPlanes];
         PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
@@ -45,15 +52,10 @@ void setup() {
                                                         Serial.println("mW");
 
 
-    
 
-    // Pin Setup 
-        pinMode(NewFrame_MScan, INPUT);
-        pinMode(TTLPulse_ETL, OUTPUT);
-        pinMode(TTLPulse_EOM, OUTPUT);
 
     // Interrupt
-        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane(), RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
         //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePower(), RISING);
 }
 

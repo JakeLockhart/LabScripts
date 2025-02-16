@@ -8,7 +8,7 @@
 int Wavelength = 920;
 int TotalImagingPlanes = 3; 
 int ImagingPlaneDepths[MAX_Planes] = {0, 20, 66};
-int InputIntensity[MAX_Planes] = {20, 150, 44}; // TO BE REPLACED WITH A SPENCER'S FUNCTION!!!!
+int InputIntensity[MAX_Planes] = {20, 100, 44}; // TO BE REPLACED WITH A SPENCER'S FUNCTION!!!!
 
 //---------------------- Do Not Edit --------------------------------------------------------------
 // Arduino Board Pins (TTL Input/Output)
