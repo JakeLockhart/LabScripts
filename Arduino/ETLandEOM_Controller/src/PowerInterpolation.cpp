@@ -9,7 +9,6 @@ float CubicSplineInterpolation(float x, float x0, float y0, float x1, float y1) 
 
 // Create power interpolation function
 void PowerInterpolation(int Wavelength, int* InputPower, int TotalPlanes, float* OutputPower) {
-    Serial.begin(9300);
     // Determine the table column based on Wavelength
         int TotalWavelengths = sizeof(data_WavelengthList[0].Wavelengths) / sizeof(data_WavelengthList[0].Wavelengths[0]);
         int ColumnIndex = -1;
@@ -52,5 +51,4 @@ void PowerInterpolation(int Wavelength, int* InputPower, int TotalPlanes, float*
                     }
                 }
         }
-    Serial.end();
 }

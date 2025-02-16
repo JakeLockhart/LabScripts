@@ -17,12 +17,13 @@
 
 
 void setup() {
+    Serial.begin(9300);
     // Initialization
         float LaserIntensity[TotalImagingPlanes];
         PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
 
     // Intitialization Serial Output
-        Serial.begin(9300);
+
         Serial.println();
         Serial.println("User Defined Parameters:");
         Serial.print("\tLaser Wavelength: ");           Serial.println(Wavelength);
