@@ -1,6 +1,7 @@
 #ifndef PowerInterpolation_h
 #define PowerInterpolation_h
+#include "PowerResults.h"
 
-float PowerInterpolation(int Wavelength, float InputIntensity);
+void PowerInterpolation(int Wavelength, int* InputPower, int TotalPlanes, float* OutputPower);
 
 #endif

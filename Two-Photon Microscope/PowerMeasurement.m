@@ -78,6 +78,8 @@ function Result = PowerMeasurement
         R2Pm.Final.VarList = sprintf('Var%d',i+1);
         R2Pm.Final.RawFinal = renamevars(R2Pm.Final.RawFinal,R2Pm.Final.VarList, SystemProperties.FilePath.Data.Name{i} + " Output Intensity [mW]");
     end
+
+
     for i = 1:length(R2Pm.Final.RawFinal.Properties.VariableNames)
         R2Pm.Final.Names(i) = string(cell2mat(R2Pm.Final.RawFinal.Properties.VariableNames(i)));
         if R2Pm.Final.Names(i) == "Input Laser Intensity [%]"
@@ -89,3 +91,4 @@ function Result = PowerMeasurement
     Result = R2Pm.Final.RawFinal(:,R2Pm.Final.Names(index));
     
     end
+

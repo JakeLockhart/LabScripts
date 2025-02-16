@@ -1,32 +1,48 @@
 #include <Arduino.h>
 #include "PowerResults.h"
-#include "PowerInterpolation.h"
 
+// Create cubic spline interpolation function
+float CubicSplineInterpolation(float x, float x0, float y0, float x1, float y1) {
+    float t = (x - x0) / (x1 - x0);
+    return (1 - t) * y0 + t * y1;
+}
 
-float PowerInterpolation(int Wavelength, float InputIntensity) {
-    Serial.begin(9600);
-    int Index = -1;
-    for (int i = 0; i < 4; i++) {
-        if (data_WavelengthList[0].Wavelengths[i] == Wavelength) {
-            Index = i;
-            break;
+// Create power interpolation function
+void PowerInterpolation(int Wavelength, int* InputPower, int TotalPlanes, float* OutputPower) {
+    // Determine the table column based on Wavelength
+        int TotalWavelengths = sizeof(data_WavelengthList[0].Wavelengths) / sizeof(data_WavelengthList[0].Wavelengths[0]);
+        int ColumnIndex = -1;
+        for (int i = 0; i < data_WavelengthList_size; i++) {
+            for (int j = 0; j < TotalWavelengths; j++) {
+                if (data_WavelengthList[i].Wavelengths[j] == Wavelength) {
+                    ColumnIndex = j;
+                    break;
+                }
+            }
+            if (ColumnIndex != -1) break;
         }
-    }
-    if (Index == -1) {
-        Serial.println("Error: Wavelength not found.");
-        return NAN;
-    }
-    for (int i = 1; i < data_PowerResults_size; i++) {
-        if (InputIntensity >= data_PowerResults[i].InputIntensity && InputIntensity <= data_PowerResults[i + 1].InputIntensity) {
-            float X1 = data_PowerResults[i].InputIntensity;
-            float X2 = data_PowerResults[i + 1].InputIntensity;
-            float Y1 = data_PowerResults[i].LaserIntensity[Index];
-            float Y2 = data_PowerResults[i + 1].LaserIntensity[Index];
-            float Z = Y1 + (InputIntensity - X1) * ((Y2 - Y1) / (X2 - X1));
-            return Z;
+        if (ColumnIndex == -1) {
+            Serial.println("Error: No matching Wavelength in PowerResults");
+            return;
         }
-    }
-    Serial.println("Error: Interpolation failed.");
-    Serial.end();
-    return NAN;
+    // Interpolate for each element of the InputIntensity array
+        for (int i = 0; i < TotalPlanes; i++) {
+            int Intensity = InputPower[i];
+            // Is Intensity within PowerResult bounds [0%, 100%]
+                if (Intensity < data_PowerResults[0].InputIntensity || Intensity > data_PowerResults[data_PowerResults_size-1].InputIntensity) {
+                    Serial.println("Error: Input intensity not within PowerResults bounds [0%, 100%]");
+                    return;
+                }
+            // Find neighboring points for interpolation
+                for (int j = 0; j < data_PowerResults_size - 1; j++) {
+                    if (data_PowerResults[j].InputIntensity <= Intensity && data_PowerResults[j+1].InputIntensity >= Intensity) {
+                        OutputPower[i] = CubicSplineInterpolation(
+                            Intensity,
+                            data_PowerResults[j].InputIntensity, data_PowerResults[j].LaserIntensity[ColumnIndex],
+                            data_PowerResults[j+1].InputIntensity, data_PowerResults[j+1].LaserIntensity[ColumnIndex]
+                        );
+                        break;
+                    }
+                }
+        }
 }

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "Parameters.h"
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
 #include "PowerInterpolation.h"
@@ -12,44 +13,47 @@
 //          - Adjust the ETL in response to a TTL pulse
 //          - Adjust the EOM in response to a TTL pulse to match new focal depth(s)
 
-// Define pin input(s)/output(s)
-int NewFrame_MScan = 2;
-int TTLPulse_ETL = 7;
-int TTLPulse_EOM = 8;
-
-// Define variables
-int CurrentImagingPlane = 2;
-int TotalImagingPlanes = 2;
-int ImagingDepth[2] = {2,3};
-int ImagingPower = {0};
-int Delay = 5;
-
-int Wavelength = 920;
-float InputIntensity = 32;
-
-// Define functions
-float TESTTEST = PowerInterpolation(Wavelength, InputIntensity);
-void ChangePlane(int CurrentImagingPlane, int TotalImagingPlanes,int TTLPulse_ETL, int Delay);
-//void ChangePower();
 
 
 
 void setup() {
-    Serial.begin(9600);
-    Serial.print("Wavelength [nm]: "); Serial.println(Wavelength);
-    Serial.print("Input Intensity(s) [%]: "); Serial.println(InputIntensity);
-    Serial.print("Laser Intensity [mW]: "); Serial.println(TESTTEST);
-    Serial.print("Total Imaging Planes: "); Serial.println(TotalImagingPlanes);
-    Serial.print("Imaging Plane Depths: "); 
-        for (int i = 0; i < TotalImagingPlanes; i++) {
-            Serial.print(ImagingDepth[i]); Serial.print("um ");}; Serial.println("");
+    // Initialization
+        float LaserIntensity[TotalImagingPlanes];
+        PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
 
-    pinMode(NewFrame_MScan, INPUT);
-    pinMode(TTLPulse_ETL, OUTPUT);
-    pinMode(TTLPulse_EOM, OUTPUT);
+    // Intitialization Serial Output
+        Serial.begin(9300);
+        Serial.println();
+        Serial.println("User Defined Parameters:");
+        Serial.print("\tLaser Wavelength: ");           Serial.println(Wavelength);
+        Serial.print("\tTotal Imaging Plane(s): ");     Serial.println(TotalImagingPlanes);
+        Serial.print("\tImaging Plane Depth(s): ");     for (int i = 0; i < TotalImagingPlanes; i++) {
+                                                            Serial.print(InputIntensity[i]);
+                                                            if (i < TotalImagingPlanes - 1) Serial.print("um, ");
+                                                        }
+                                                        Serial.println("um");
+        Serial.print("\tLaser Input Percentage(s): ");  for (int i = 0; i < TotalImagingPlanes; i++) {
+                                                            Serial.print(InputIntensity[i]);
+                                                            if (i < TotalImagingPlanes - 1) Serial.print("%, ");
+                                                        }
+                                                        Serial.println("%");
+        Serial.print("\tLaser Output Intensity(s): ");  for (int i = 0; i < TotalImagingPlanes; i++) {
+                                                            Serial.print(LaserIntensity[i], 4);
+                                                            if (i < TotalImagingPlanes-1) Serial.print("mW, ");
+                                                        }
+                                                        Serial.println("mW");
 
-    //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane(CurrentImagingPlane, TotalImagingPlanes, TTLPulse_ETL, Delay), RISING);
+
     
+
+    // Pin Setup 
+        pinMode(NewFrame_MScan, INPUT);
+        pinMode(TTLPulse_ETL, OUTPUT);
+        pinMode(TTLPulse_EOM, OUTPUT);
+
+    // Interrupt
+        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane(), RISING);
+        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePower(), RISING);
 }
 
 void loop() {}
