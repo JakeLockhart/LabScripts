@@ -19,3 +19,4 @@ int TTLPulse_EOM = 8;   // Outgoing TTL pulse to Amplifier (J3 port) to control 
 // Declare derivative/constant variables
 int Delay = 5;
 int CurrentImagingPlane = 2;
+float LaserIntensity[MAX_Planes];

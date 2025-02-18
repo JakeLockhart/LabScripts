@@ -14,5 +14,6 @@ extern int TTLPulse_EOM;
 
 extern int Delay;
 extern int CurrentImagingPlane;
+extern float LaserIntensity[MAX_Planes];
 
 #endif
