@@ -9,10 +9,19 @@ void vSwitch();         // Declare function - Function to switch imaging plane b
 void setup() {
     pinMode(pulseOutput, OUTPUT);   // Set the 'pulseOutput' as the output pin - Output signal to ETL
     pinMode(frameTrigger, INPUT);   // Set the 'frameTrigger' as the input pin - Recieve signal from MScan
-    attachInterrupt(digitalPinToInterrupt(frameTrigger), vSwitch, RISING);  // ?????
+    attachInterrupt(digitalPinToInterrupt(frameTrigger), vSwitch, RISING);  // This is an interrupt command. Whenever a signal is sent to 
+                                                                            // the 'frameTrigger' pin, this function will run. This is not 
+                                                                            // a loop, therefore there is no time lag that requires the loop
+                                                                            // to iterate over the function. It is only 'active' when the 
+                                                                            // interrupt occurs. When active, it points to the void function,
+                                                                            // in this case that is 'vSwitch'. This is the 'Interrupt Service 
+                                                                            // Routine' or ISR. It is supposed to be a fast function, that has 
+                                                                            // no inputs. The third parameter dictates when to trigger the IRS,
+                                                                            // in this case, the ISR is trigger on the rise of the frameTrigger
+                                                                            // signal.
 }
 
-void loop() {}  //
+void loop() {}
 
 void vSwitch() {                            // Create declared function (vSwitch)
     if (currTrigNum == 1) {                 // If you are on the last (bottom) imaging plane
