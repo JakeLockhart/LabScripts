@@ -16,8 +16,6 @@
 //          - Adjust the EOM in response to a TTL pulse to match new focal depth(s)
 
 
-
-
 void setup() {
     Serial.begin(9300);
     
@@ -29,8 +27,6 @@ void setup() {
     // Initialization
         PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
         
-
-
     // Intitialization Serial Output
 
         Serial.println();
@@ -52,13 +48,21 @@ void setup() {
                                                             if (i < TotalImagingPlanes-1) Serial.print("mW, ");
                                                         }
                                                         Serial.println("mW");
-
-
-
+    // Test analog write (due)
+        analogWriteResolution(12);
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
+        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
         //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePower, RISING);
 }
 
-void loop() {}
+void loop() {
+    analogWrite(TTLPulse_EOM, 620);
+    delayMicroseconds(10);
+    analogWrite(TTLPulse_EOM, 0);
+    delayMicroseconds(10);
+    analogWrite(TTLPulse_EOM, 1020);
+    delayMicroseconds(10);
+    analogWrite(TTLPulse_EOM, 0);
+    delayMicroseconds(10);
+}

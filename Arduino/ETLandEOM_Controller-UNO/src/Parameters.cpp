@@ -13,8 +13,8 @@ int InputIntensity[MAX_Planes] = {20, 100, 44}; // TO BE REPLACED WITH A SPENCER
 //---------------------- Do Not Edit --------------------------------------------------------------
 // Arduino Board Pins (TTL Input/Output)
 int NewFrame_MScan = 2; // Income TTL pulse from MScan that occurs at every new frame
-int TTLPulse_ETL = 7;   // Outgoing TTL pulse to Gardasoft, then ETL
-int TTLPulse_EOM = 8;   // Outgoing TTL pulse to Amplifier (J3 port) to control EOM (Pockel Cell)
+int TTLPulse_ETL = 7;   // Outgoing TTL pulse to Gardasoft, then ETL 
+int TTLPulse_EOM = DAC0;   // Outgoing TTL pulse to Amplifier (J3 port) to control EOM (Pockel Cell)
 
 // Declare derivative/constant variables
 int Delay = 5;
