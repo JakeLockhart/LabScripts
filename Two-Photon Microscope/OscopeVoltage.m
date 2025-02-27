@@ -31,9 +31,9 @@ end
 
 %% Histogram to Determine Noise & Amplitudes
 for i = 1: SystemProperties.FilePath.Data.Length
-    TotalBins = sqrt(size(Oscope.AlignedVoltage(i,:),2));
+    TotalBins = sqrt(size(Oscope.AlignedVoltage(i,:),2))
     [Count, BinEdge] = histcounts(Oscope.AlignedVoltage(i,:), TotalBins);
-    BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2;
+    BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2
 
     [Peaks, Location] = findpeaks(BinCenter, "NPeaks", 2);
 
