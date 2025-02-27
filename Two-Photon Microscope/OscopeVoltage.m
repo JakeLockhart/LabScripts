@@ -35,6 +35,8 @@ for i = 1: SystemProperties.FilePath.Data.Length
     [Count, BinEdge] = histcounts(Oscope.AlignedVoltage(i,:), TotalBins);
     BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2;
 
+    [Peaks, Location] = findpeaks(BinCenter, "NPeaks", 2);
+
     [~, IDx] = maxk(Count, 2);
     LowVoltage.Average(i) = min(BinCenter(IDx));
     HighVoltage.Average(i) = max(BinCenter(IDx));
@@ -43,14 +45,14 @@ for i = 1: SystemProperties.FilePath.Data.Length
     
     LowVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - LowVoltage.Average(i)) < Tolerance(i));
     HighVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - HighVoltage.Average(i)) < Tolerance(i));
+
+    DataCounts{i,:} = Count;
+    DataCenter{i,:} = BinCenter;
     LowVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
     LowVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
     HighVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
     HighVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
 end
-    LowVoltage.Noise
-
-
 
 %% Plot Waveforms
 figure(1)
@@ -84,8 +86,9 @@ end
 title("Synced Single Step")
 xlim([-50, 150]);
 nexttile    %   --- Show Histogram ---
-
-
+bar(DataCenter{10,:}, DataCounts{10,:}); hold on;
+xline(HighVoltage.Average(10)); hold on;
+xline(LowVoltage.Average(10)); hold on;
 
 
 
