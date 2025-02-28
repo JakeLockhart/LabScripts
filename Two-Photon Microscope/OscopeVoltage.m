@@ -30,32 +30,47 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 
 %% Histogram to Determine Noise & Amplitudes
+figure()
+t = tiledlayout('flow');
+title(t,"Oscilloscope Waveform Histograms")
+xlabel(t, "Voltage [mV]"); ylabel(t, "Frequency");
 for i = 1: SystemProperties.FilePath.Data.Length
     TotalBins = sqrt(size(Oscope.AlignedVoltage(i,:),2))
     [Count, BinEdge] = histcounts(Oscope.AlignedVoltage(i,:), TotalBins);
     BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2
 
-    [Peaks, Location] = findpeaks(BinCenter, "NPeaks", 2);
+    LowSignal.Count = Count(1:round(end/2));
+    LowSignal.BinEdge = BinEdge(1:round(end/2));
+    LowSignal.BinCenter = BinCenter(1:round(end/2));
+    [LowPeak, LowLocation] = findpeaks(LowSignal.Count);
 
-    [~, IDx] = maxk(Count, 2);
-    LowVoltage.Average(i) = min(BinCenter(IDx));
-    HighVoltage.Average(i) = max(BinCenter(IDx));
+    HighSignal.Count = Count(round(end/2):end);
+    HighSignal.BinEdge = BinEdge(round(end/2):end);
+    HighSignal.BinCenter = BinCenter(round(end/2):end);
+    [HighPeak, HighLocation] = findpeaks(HighSignal.Count);
 
-    Tolerance = 0.1 * (HighVoltage.Average - LowVoltage.Average);
-    
-    LowVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - LowVoltage.Average(i)) < Tolerance(i));
-    HighVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - HighVoltage.Average(i)) < Tolerance(i));
+    %[~, IDx] = maxk(Count, 2);
+    %LowVoltage.Average(i) = min(BinCenter(IDx));
+    %HighVoltage.Average(i) = max(BinCenter(IDx));
+%
+    %Tolerance = 0.1 * (HighVoltage.Average - LowVoltage.Average);
+    %LowVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - LowVoltage.Average(i)) < Tolerance(i));
+    %HighVoltage.Range{i,:} = Oscope.AlignedVoltage(abs(Oscope.AlignedVoltage(i,:) - HighVoltage.Average(i)) < Tolerance(i));
+%
+    %LowVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
+    %LowVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
+    %HighVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
+    %HighVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
 
-    DataCounts{i,:} = Count;
-    DataCenter{i,:} = BinCenter;
-    LowVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
-    LowVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
-    HighVoltage.Base{i,:} = min(LowVoltage.Range{i,:});
-    HighVoltage.Peak{i,:} = max(LowVoltage.Range{i,:});
+
+    nexttile
+    bar(BinCenter,Count); hold on;
+    xline(LowSignal.BinCenter(LowLocation(:)), "LineWidth", 1, "Color", 'b'); hold on;
+    xline(HighSignal.BinCenter(HighLocation(:)), "LineWidth", 1, "Color", 'r'); hold on;
 end
 
 %% Plot Waveforms
-figure(1)
+figure()
 t = tiledlayout(3,2);
 title(t, "MScan Output Voltage Measurement from 2P Oscilloscope");
 xlabel(t, "Time (\mus)");  ylabel(t, "Voltage (mV)"); 
@@ -85,10 +100,6 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 title("Synced Single Step")
 xlim([-50, 150]);
-nexttile    %   --- Show Histogram ---
-bar(DataCenter{10,:}, DataCounts{10,:}); hold on;
-xline(HighVoltage.Average(10)); hold on;
-xline(LowVoltage.Average(10)); hold on;
 
 
 
