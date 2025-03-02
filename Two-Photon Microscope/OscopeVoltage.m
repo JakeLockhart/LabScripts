@@ -6,7 +6,6 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
         SystemProperties.FilePath.Data.Length = length(SystemProperties.FilePath.Folder);           % Determine the number of files in folder directory
         SystemProperties.FilePath.Data.Address = erase(SystemProperties.FilePath.Address,"*.csv");  % Create beginning address for file path
 
-
 %% Read .CSV file
 for i = 1:SystemProperties.FilePath.Data.Length
     Name = erase(SystemProperties.FilePath.Folder(i).name, ".csv");
@@ -17,8 +16,6 @@ for i = 1:SystemProperties.FilePath.Data.Length
     Oscope.Time(i,:) = TempFile{:,4}/Oscope.SampleInterval(i,:);
     Oscope.Voltage(i,:) = TempFile{:,5};
 end
-Oscope.PulseWidth = 100;
-Oscope.PulseGap = 50;
 
 %% Cross Correlation to Sync Waveforms
 for i = 1:SystemProperties.FilePath.Data.Length
@@ -72,7 +69,7 @@ set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
 nexttile(2)
 title("Aligned Signal Data", 'Color', 'white')
-axis tight;
+xlim([-175, 300])
 set(gca, 'Color', [0 0 0]); 
 set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
@@ -120,6 +117,7 @@ set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
 Interval = [-1,0:5:100];
 grid on; axis tight;
+
 for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(1)
     plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:)); hold on;
@@ -128,33 +126,35 @@ for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(3)
     plot(Interval(i), LowSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
     plot(Interval(i), HighSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
-    pause(0.05);
+    pause(0.5);
 end
+    pause(0.5)
     plot(Interval, HighSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
     plot(Interval, LowSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
+    pause(0.5)
     plot(Interval, HighSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'red'); hold on;
     plot(Interval, LowSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'blue'); hold on;
     legend("High Signal Voltage", "Low Signal Voltage", 'Color', 'white', 'Location', 'northwest')
 
 %% Plot Signal Processing
 figure(3)
-pause(2)
 t = tiledlayout(6,6);
 title(t, "MScan Signal Processing", 'Color', 'white')
 ColorMap = hsv(SystemProperties.FilePath.Data.Length);
 set(gcf,"Color", [0 0 0])
 nexttile(1, [2,2])
-    title("Raw Signal Data", 'Color', 'white')
-    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-    hold on;
+title("Raw Signal Data", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
 nexttile(3, [2,2])
-    title("Aligned Signal Data", 'Color', 'white')
-    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-    hold on;
+title("Aligned Signal Data", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
 nexttile(5, [2,2])
-    title("Aligned Single Step Waveforms", 'Color', 'white')
-    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-    hold on;
+title("Aligned Single Step Waveforms", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
+
 for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(1, [2,2])
     plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); 
@@ -163,7 +163,8 @@ for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(3, [2,2])
     plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    axis tight; hold on;
+    xlim([-175, 300])
+    hold on;
     nexttile(5, [2,2])
     plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
