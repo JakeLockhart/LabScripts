@@ -99,7 +99,13 @@ t = tiledlayout(1,3);
 title(t, "Voltage Step & Histogram", 'Color', 'white');
 ColorMap = hsv(SystemProperties.FilePath.Data.Length);
 set(gcf,"Color", [0 0 0])
-nexttile(1)
+nexttile(1)    
+title("Single Step Waveforms", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
+xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
+set(gca, 'Color', [0 0 0]); hold on;
+set(gca, 'XColor', 'white', 'YColor', 'white');
+nexttile(2)
 title("Low & High Signal Histogram for Each Waveform", 'Color', 'white')
 xlabel("Waveform Voltage [mV]", 'Color', 'white'); ylabel("Frequency [Counts]", 'Color', 'white');
 ylim([0,750]);
@@ -107,12 +113,6 @@ xlim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]
 set(gca, 'Color', [0 0 0]); 
 set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
-nexttile(2)    
-title("Single Step Waveforms", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
-xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
-set(gca, 'Color', [0 0 0]); hold on;
-set(gca, 'XColor', 'white', 'YColor', 'white');
 nexttile(3)
 title("High & Low Signal Voltages", 'Color', 'white')
 xlabel("Laser Input Intensity", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
@@ -122,28 +122,54 @@ Interval = [-1,0:5:100];
 grid on; axis tight;
 for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(1)
-    bar(WF_T.BinCenter(i,:), WF_T.Count(i,:), "FaceAlpha", 0.75, "FaceColor", ColorMap(i,:), "EdgeColor", "none"); hold on;
-    nexttile(2)
     plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:)); hold on;
+    nexttile(2)
+    bar(WF_T.BinCenter(i,:), WF_T.Count(i,:), "FaceAlpha", 0.75, "FaceColor", ColorMap(i,:), "EdgeColor", "none"); hold on;
     nexttile(3)
     plot(Interval(i), LowSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
     plot(Interval(i), HighSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
-    pause(0.5);
+    pause(0.05);
 end
     plot(Interval, HighSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
     plot(Interval, LowSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
     plot(Interval, HighSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'red'); hold on;
     plot(Interval, LowSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'blue'); hold on;
     legend("High Signal Voltage", "Low Signal Voltage", 'Color', 'white', 'Location', 'northwest')
-%% Plot Individual Waveform Histograms
+
+%% Plot Signal Processing
 figure(3)
-t = tiledlayout('flow');
-title(t, "Low & High Signal Histogram for Each Waveform", 'Color', 'white')
-xlabel(t, "Waveform Voltage [mV]", 'Color', 'white'); ylabel(t, "Frequency [Counts]", 'Color', 'white');
+pause(2)
+t = tiledlayout(6,6);
+title(t, "MScan Signal Processing", 'Color', 'white')
+ColorMap = hsv(SystemProperties.FilePath.Data.Length);
 set(gcf,"Color", [0 0 0])
-hold on;
+nexttile(1, [2,2])
+    title("Raw Signal Data", 'Color', 'white')
+    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+    hold on;
+nexttile(3, [2,2])
+    title("Aligned Signal Data", 'Color', 'white')
+    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+    hold on;
+nexttile(5, [2,2])
+    title("Aligned Single Step Waveforms", 'Color', 'white')
+    xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+    hold on;
 for i = 1:SystemProperties.FilePath.Data.Length
-    nexttile
+    nexttile(1, [2,2])
+    plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); 
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    axis tight; hold on;
+    nexttile(3, [2,2])
+    plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    axis tight; hold on;
+    nexttile(5, [2,2])
+    plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
+    hold on;
+    nexttile()
     bar(WF_S.BinCenter(i,:), WF_S.Count(i,:), 'FaceColor', ColorMap(i,:), "EdgeColor", "none"); 
     xline(LowSignal.Voltage(i,:), 'w--');
     xline(HighSignal.Voltage(i,:), 'w--');
@@ -155,16 +181,8 @@ for i = 1:SystemProperties.FilePath.Data.Length
     title(Name, 'Color', 'white');
     set(gca, 'Color', [0 0 0]); 
     set(gca, 'XColor', 'white', 'YColor', 'white');
-    pause(0.05)
+    pause(0.5)
 end
 
-%% Plot Results
 
 
-%Interval = [-1,0:5:100];
-%plot(Interval, LowSignal.Voltage); hold on;
-%plot(Interval, HighSignal.Voltage); hold on;
-%title("High vs Low Signal");
-%xlabel("Laser Input Intensity"); ylabel("Voltage [mV]");
-%legend("Low Voltage", "High Voltage", "Location", "best");
-%grid on; axis tight;
