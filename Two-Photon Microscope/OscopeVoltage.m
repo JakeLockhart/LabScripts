@@ -5,6 +5,8 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
         SystemProperties.FilePath.Folder = dir(SystemProperties.FilePath.Address);                  % Identify the folder directory 
         SystemProperties.FilePath.Data.Length = length(SystemProperties.FilePath.Folder);           % Determine the number of files in folder directory
         SystemProperties.FilePath.Data.Address = erase(SystemProperties.FilePath.Address,"*.csv");  % Create beginning address for file path
+        [FolderPath, ~, ~] = fileparts(SystemProperties.FilePath.Address);
+        SystemProperties.FilePath.CurrentFolder = regexp(FolderPath, '([^\\]+)$', 'match', 'once');
 
 %% Read .CSV file
 for i = 1:SystemProperties.FilePath.Data.Length
@@ -26,7 +28,7 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 
 %% Histogram & High/Low Signal Data Analysis
-WF_T.TotalBins = linspace(0, max(1.25*Oscope.Voltage(end)), SystemProperties.FilePath.Data.Length*10);
+WF_T.TotalBins = linspace(0, max(max(1.25*Oscope.Voltage)), SystemProperties.FilePath.Data.Length*10);
 for i = 1:SystemProperties.FilePath.Data.Length
     [Count, BinEdge] = histcounts(Oscope.AlignedVoltage(i,:), WF_T.TotalBins);
     WF_T.Count(i,:) = Count;
@@ -54,8 +56,97 @@ for i = 1:SystemProperties.FilePath.Data.Length
     HighSignal.Voltage(i,:) = HighSignal.BinCenter(i, HighLocation(Index));
 end
 
+%% Waveform Characteristics
+for i = 1:SystemProperties.FilePath.Data.Length
+    Oscope.BinarySignal(i,:) = Oscope.AlignedVoltage(i,:) > (LowSignal.Voltage(i) + HighSignal.Voltage(i))/2;
+    [xc, lags] = xcorr(Oscope.BinarySignal(end,:), Oscope.BinarySignal(i,:));
+    [~, Index] = max(xc);
+    Shift = lags(Index);
+    Oscope.BinarySignal(i,:) = circshift(Oscope.BinarySignal(i,:), -Shift);
+
+    pw = pulsewidth(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+    pp = pulseperiod(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+    rt = risetime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+    ft = falltime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+    Waveform.Local.PulseWidth(i) = mean(pw);
+    Waveform.Local.PulsePeriod(i) = mean(pp);
+    Waveform.Local.RiseTime(i) = mean(rt);
+    Waveform.Local.FallTime(i) = mean(ft);
+end
+Waveform.Global.PulseWidth = mean(pw([4,end]));
+Waveform.Global.PulsePeriod = mean(pp([4,end]));
+Waveform.Global.PulseGap = Waveform.Global.PulsePeriod - Waveform.Global.PulseWidth;
+Waveform.Global.RiseTime = mean(rt([4,end]));
+Waveform.Global.FallTime = mean(ft([4,end]));
+
 %% Plot Initial Signal Processing
-figure(1)
+figure('WindowState', 'maximized')
+t = tiledlayout(6,6);
+title(t, "MScan Signal Processing", 'Color', 'white')
+ColorMap = hsv(SystemProperties.FilePath.Data.Length);
+set(gcf,"Color", [0 0 0])
+nexttile(1, [2,2])
+title("Raw Signal Data", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
+nexttile(3, [2,2])
+title("Aligned Signal Data", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
+nexttile(5, [2,2])
+title("Aligned Single Step Waveforms", 'Color', 'white')
+xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+hold on;
+
+for i = 1:SystemProperties.FilePath.Data.Length
+    nexttile(1, [2,2])
+    plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); 
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    axis tight; hold on;
+    nexttile(3, [2,2])
+    plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    xlim([-3*Waveform.Global.PulsePeriod, 3*Waveform.Global.PulsePeriod])
+    hold on;
+    nexttile(5, [2,2])
+    plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
+    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
+    xlim([-0.5*Waveform.Global.PulsePeriod, 1.0*Waveform.Global.PulsePeriod]); 
+    ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
+    nexttile()
+    bar(WF_S.BinCenter(i,:), WF_S.Count(i,:), 'FaceColor', ColorMap(i,:), "EdgeColor", "none"); 
+    xline(LowSignal.Voltage(i,:), 'w--');
+    xline(HighSignal.Voltage(i,:), 'w--');
+    if i == 1
+        Name = "Waveform: Laser off";
+    else
+        Name = "Waveform: " + num2str((i-2)*5) + "%";
+    end
+    title(Name, 'Color', 'white');
+    set(gca, 'Color', [0 0 0]); 
+    set(gca, 'XColor', 'white', 'YColor', 'white');
+    pause(0.1)
+end
+pause(2)
+
+%% Waveform Characteristics Demo
+figure(2)
+pulsewidth(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+figure(3)
+pulseperiod(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+figure(4)
+risetime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+figure(5)
+falltime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+pause(1)
+
+
+%% Plot Waveforms
+figure(6)
 t = tiledlayout(3,1);
 title(t, "MScan Oscilloscope Data Processing", 'Color', 'white')
 ylabel(t, "Waveform Voltage [mV]", 'Color', 'white');
@@ -69,13 +160,14 @@ set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
 nexttile(2)
 title("Aligned Signal Data", 'Color', 'white')
-xlim([-175, 300])
+xlim([-3*Waveform.Global.PulsePeriod, 3*Waveform.Global.PulsePeriod])
 set(gca, 'Color', [0 0 0]); 
 set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
 nexttile(3)    
 title("Aligned Single Step Waveforms", 'Color', 'white')
-xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
+xlim([-0*Waveform.Global.PulsePeriod, 1*Waveform.Global.PulsePeriod]); 
+ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 xlabel("Time [\mus]", 'Color', 'white');
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
@@ -89,9 +181,10 @@ for i = 1:SystemProperties.FilePath.Data.Length
     plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:)); hold on;
     pause(0.01)
 end
+pause(1)
 
-%% Plot Global Histogram and Single Steps
-figure(2)
+%% Plot Single Steps, Global Histogram, and Results 
+figure(7)
 t = tiledlayout(1,3);
 title(t, "Voltage Step & Histogram", 'Color', 'white');
 ColorMap = hsv(SystemProperties.FilePath.Data.Length);
@@ -99,7 +192,8 @@ set(gcf,"Color", [0 0 0])
 nexttile(1)    
 title("Single Step Waveforms", 'Color', 'white')
 xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
-xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
+xlim([-0.5*Waveform.Global.PulsePeriod, 1.5*Waveform.Global.PulsePeriod]); 
+ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
 nexttile(2)
@@ -126,7 +220,7 @@ for i = 1:SystemProperties.FilePath.Data.Length
     nexttile(3)
     plot(Interval(i), LowSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
     plot(Interval(i), HighSignal.Voltage(i), '.', 'MarkerSize', 30, 'Color', ColorMap(i,:), 'HandleVisibility', 'off'); hold on;
-    pause(0.5);
+    pause(0.1);
 end
     pause(0.5)
     plot(Interval, HighSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
@@ -136,54 +230,26 @@ end
     plot(Interval, LowSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'blue'); hold on;
     legend("High Signal Voltage", "Low Signal Voltage", 'Color', 'white', 'Location', 'northwest')
 
-%% Plot Signal Processing
-figure(3)
-t = tiledlayout(6,6);
-title(t, "MScan Signal Processing", 'Color', 'white')
-ColorMap = hsv(SystemProperties.FilePath.Data.Length);
-set(gcf,"Color", [0 0 0])
-nexttile(1, [2,2])
-title("Raw Signal Data", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-hold on;
-nexttile(3, [2,2])
-title("Aligned Signal Data", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-hold on;
-nexttile(5, [2,2])
-title("Aligned Single Step Waveforms", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
-hold on;
-
+%% File Output
+Results.Data = [Interval', LowSignal.Voltage, HighSignal.Voltage];
+Results.NewFile = 'MScan HighLow Voltage - ' + SystemProperties.FilePath.CurrentFolder;
+Results.fid = fopen(Results.NewFile, 'w');
 for i = 1:SystemProperties.FilePath.Data.Length
-    nexttile(1, [2,2])
-    plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); 
-    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    axis tight; hold on;
-    nexttile(3, [2,2])
-    plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
-    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    xlim([-175, 300])
-    hold on;
-    nexttile(5, [2,2])
-    plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
-    set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    xlim([-25, 150]); ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
-    hold on;
-    nexttile()
-    bar(WF_S.BinCenter(i,:), WF_S.Count(i,:), 'FaceColor', ColorMap(i,:), "EdgeColor", "none"); 
-    xline(LowSignal.Voltage(i,:), 'w--');
-    xline(HighSignal.Voltage(i,:), 'w--');
-    if i == 1
-        Name = "Waveform: Laser off";
-    else
-        Name = "Waveform: " + num2str((i-2)*5) + "%";
-    end
-    title(Name, 'Color', 'white');
-    set(gca, 'Color', [0 0 0]); 
-    set(gca, 'XColor', 'white', 'YColor', 'white');
-    pause(0.5)
+    fprintf(Results.fid, '%d\t%.6f\t%.6f\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3));
+end
+fclose(Results.fid);
+
+disp(['Data written to ' + Results.NewFile])
+fprintf('\n\tInput Intensity\tLow Signal Voltage\tHigh Signal Voltage\n');
+for i = 1:SystemProperties.FilePath.Data.Length
+    fprintf('\t%d%%\t\t%.6f mV\t\t%.6f mV\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3))
 end
 
+fprintf('\nWaveform Characteristics:\n');
+fprintf('\tPulse Period:\t%.2f μs\n', Waveform.Global.PulsePeriod);
+fprintf('\tPulse Width:\t%.2f μs\n', Waveform.Global.PulseWidth);
+fprintf('\tPulse Gap:\t%.2f μs\n', Waveform.Global.PulseGap);
+fprintf('\tRise Time:\t%.4f μs\n', Waveform.Global.RiseTime);
+fprintf('\tFall Time:\t%.4f μs\n', Waveform.Global.FallTime);
 
 
