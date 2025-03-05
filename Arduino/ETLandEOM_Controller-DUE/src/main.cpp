@@ -8,6 +8,7 @@
 #include "PowerInterpolation.h"
 #include "ChangePlane.h"
 #include "ChangeVoltage.h"
+#include "InterruptHandler.h"
 
 //  This script is designed to control both the ETL and the EOM (Pockel Cell) in response to TTL pulses.
 //      Parameters:
@@ -67,8 +68,7 @@ void setup() {
         Serial.println(LaserVoltage_Bits[2]);
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangeVoltage, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
 }
 
 void loop() {

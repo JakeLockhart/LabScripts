@@ -9,9 +9,11 @@ void ChangeVoltage() {
         delayMicroseconds(Delay);
         analogWrite(TTLPulse_EOM, 0);
         CurrentImagingPlane = TotalImagingPlanes;
-        i++;
         if (i == TotalImagingPlanes) {
             i = 0;
+        }
+        else {
+            i++;
         }
     }
     else {
