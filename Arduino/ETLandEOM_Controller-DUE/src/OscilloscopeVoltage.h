@@ -1,11 +1,17 @@
 #ifndef OscilloscopeVoltage_h
 #define OscilloscopeVoltage_h
 
-struct OScope {
+struct OScope_LV {
     float MScanInput;
-    float Voltage[4];
+    float LowVoltage[4];
 };
-extern OScope data_OScope[];
+struct OScope_HV {
+    float MScanInput;
+    float HighVoltage[4];
+};
+
+extern OScope_LV data_OScopeLowVoltage[];
+extern OScope_HV data_OScopeHighVoltage[];
 extern const int data_OScope_size;
 
 #endif

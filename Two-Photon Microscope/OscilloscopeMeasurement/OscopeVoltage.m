@@ -11,7 +11,7 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
 %% Read .CSV file
 for i = 1:SystemProperties.FilePath.Data.Length
     Name = erase(SystemProperties.FilePath.Folder(i).name, ".csv");
-    if strcmpi(Name, "Notes"); continue; end;
+    if strcmpi(Name, "Notes"); continue; end
     TempFile = readtable(fullfile(SystemProperties.FilePath.Data.Address, Name));
     Oscope.RecordLength(i,:) = TempFile{1,2};
     Oscope.SampleInterval(i,:) = TempFile{2,2};
@@ -80,7 +80,7 @@ Waveform.Global.RiseTime = mean(rt([4,end]));
 Waveform.Global.FallTime = mean(ft([4,end]));
 
 %% Plot Initial Signal Processing
-figure('WindowState', 'maximized')
+figure(1)
 t = tiledlayout(6,6);
 title(t, "MScan Signal Processing", 'Color', 'white')
 ColorMap = hsv(SystemProperties.FilePath.Data.Length);
@@ -131,19 +131,21 @@ pause(2)
 
 %% Waveform Characteristics Demo
 figure(2)
-pulsewidth(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
-xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+pulsewidth(double(Oscope.BinarySignal(end,:)), Oscope.Time(end,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]);
+pause(0.5)
 figure(3)
-pulseperiod(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
-xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+pulseperiod(double(Oscope.BinarySignal(end,:)), Oscope.Time(end,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]);
+pause(0.5)
 figure(4)
-risetime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
-xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
+risetime(double(Oscope.BinarySignal(end,:)), Oscope.Time(end,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]);
+pause(0.5)
 figure(5)
-falltime(double(Oscope.BinarySignal(i,:)), Oscope.Time(i,:));
-xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]); hold on;
-pause(1)
-
+falltime(double(Oscope.BinarySignal(end,:)), Oscope.Time(end,:));
+xlim([-5*Waveform.Global.PulsePeriod, 5*Waveform.Global.PulsePeriod]);
+pause(0.5)
 
 %% Plot Waveforms
 figure(6)
@@ -232,14 +234,14 @@ end
 
 %% File Output
 Results.Data = [Interval', LowSignal.Voltage, HighSignal.Voltage];
-Results.NewFile = 'MScan HighLow Voltage - ' + SystemProperties.FilePath.CurrentFolder;
+Results.NewFile = 'MScan HighLow Voltage - ' + SystemProperties.FilePath.CurrentFolder + '.txt';
 Results.fid = fopen(Results.NewFile, 'w');
 for i = 1:SystemProperties.FilePath.Data.Length
     fprintf(Results.fid, '%d\t%.6f\t%.6f\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3));
 end
 fclose(Results.fid);
 
-disp(['Data written to ' + Results.NewFile])
+disp('Data written to ' + Results.NewFile)
 fprintf('\n\tInput Intensity\tLow Signal Voltage\tHigh Signal Voltage\n');
 for i = 1:SystemProperties.FilePath.Data.Length
     fprintf('\t%d%%\t\t%.6f mV\t\t%.6f mV\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3))
@@ -251,5 +253,3 @@ fprintf('\tPulse Width:\t%.2f μs\n', Waveform.Global.PulseWidth);
 fprintf('\tPulse Gap:\t%.2f μs\n', Waveform.Global.PulseGap);
 fprintf('\tRise Time:\t%.4f μs\n', Waveform.Global.RiseTime);
 fprintf('\tFall Time:\t%.4f μs\n', Waveform.Global.FallTime);
-
-

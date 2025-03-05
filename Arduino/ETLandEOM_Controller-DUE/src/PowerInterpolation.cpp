@@ -1,8 +1,9 @@
 #include <Arduino.h>
+#include "Wavelengths.h"
 #include "PowerResults.h"
 
-// Create cubic spline interpolation function
-float CubicSplineInterpolation(float x, float x0, float y0, float x1, float y1) {
+// Create linear interpolation function
+float LinearInterpolation(float x, float x0, float y0, float x1, float y1) {
     float t = (x - x0) / (x1 - x0);
     return (1 - t) * y0 + t * y1;
 }
@@ -42,7 +43,7 @@ void PowerInterpolation(int Wavelength, int* InputPower, int TotalPlanes, float*
             // Find neighboring points for interpolation
                 for (int j = 0; j < data_PowerResults_size - 1; j++) {
                     if (data_PowerResults[j].InputIntensity <= Intensity && data_PowerResults[j+1].InputIntensity >= Intensity) {
-                        OutputPower[i] = CubicSplineInterpolation(
+                        OutputPower[i] = LinearInterpolation(
                             Intensity,
                             data_PowerResults[j].InputIntensity, data_PowerResults[j].LaserIntensity[ColumnIndex],
                             data_PowerResults[j+1].InputIntensity, data_PowerResults[j+1].LaserIntensity[ColumnIndex]

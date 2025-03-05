@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Parameters.h"
+#include "Wavelengths.h"
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
 #include "PowerInterpolation.h"
