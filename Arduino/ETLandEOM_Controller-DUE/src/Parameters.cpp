@@ -18,5 +18,8 @@ int TTLPulse_EOM = DAC0;   // Outgoing TTL pulse to Amplifier (J3 port) to contr
 
 // Declare derivative/constant variables
 int Delay = 5;
-int CurrentImagingPlane = 2;
+float ReferenceVoltage = 3.3;
+int CurrentImagingPlane = TotalImagingPlanes;
 float LaserIntensity[MAX_Planes];
+float LaserVoltage[MAX_Planes];
+float LaserVoltage_Bits[MAX_Planes];

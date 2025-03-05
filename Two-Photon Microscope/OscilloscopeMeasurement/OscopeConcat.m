@@ -18,13 +18,10 @@ end
 Oscope.Intensity(:,1) = TempFile{:,1};
 
 figure(1); clf(1)
-for i = 1:8
-    plot(Oscope.Intensity(:,1), Oscope.LowVoltage(:,i), "Color", 'black'); hold on;
-    if i <5
-        plot(Oscope.Intensity(:,1), Oscope.HighVoltage(:,i), "Color", 'blue'); hold on;
-    else
-        plot(Oscope.Intensity(:,1), Oscope.HighVoltage(:,i), "Color", 'red'); hold on;
-    end
+for i = 1:4
+    plot(Oscope.Intensity(:,1), Oscope.LowVoltage(:,i), "Color", 'black'); hold on
+    plot(Oscope.Intensity(:,1), Oscope.HighVoltage(:,i), "Color", 'blue'); hold on;
+    plot(Oscope.Intensity(:,1), Oscope.HighVoltage(:,i), "Color", 'red'); hold on;
     grid on; axis tight;
     pause(0.5)
 end

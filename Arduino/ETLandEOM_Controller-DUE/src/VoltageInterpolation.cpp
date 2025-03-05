@@ -1,12 +1,7 @@
 #include <Arduino.h>
 #include "Wavelengths.h"
+#include "LinearInterpolation.h"
 #include "OscilloscopeVoltage.h"
-
-// Create linear interpolation function
-float LinearInterpolation(float x, float x0, float y0, float x1, float y1) {
-    float t = (x - x0) / (x1 - x0);
-    return (1 - t) * y0 + t * y1;
-}
 
 // Create voltage interpolation function
 void VoltageInterpolation(int Wavelength, int* MScanInput, int TotalPlanes, float* OutputVoltage) {
@@ -30,7 +25,7 @@ void VoltageInterpolation(int Wavelength, int* MScanInput, int TotalPlanes, floa
             return;
         }
     // Interpolate for each element of the High Voltage Array
-        for (int i; i < TotalPlanes; i++) {
+        for (int i = 0; i < TotalPlanes; i++) {
             int Intensity = MScanInput[i];
             // Is Intensity within VoltageResult bounds [0%, 100%]
                 if (Intensity < data_OScopeHighVoltage[0].MScanInput || Intensity > data_OScopeHighVoltage[data_OScope_size - 1].MScanInput) {
@@ -41,7 +36,14 @@ void VoltageInterpolation(int Wavelength, int* MScanInput, int TotalPlanes, floa
                     continue; 
                 }
             // Find neighboring points for interpolation
-                
+                for (int j = 0; j < data_OScope_size - 1; j++) {
+                    if (data_OScopeHighVoltage[j].MScanInput <= Intensity && data_OScopeHighVoltage[j+1].MScanInput >= Intensity) {
+                        OutputVoltage[i] = LinearInterpolation(
+                            Intensity,
+                            data_OScopeHighVoltage[j].MScanInput, data_OScopeHighVoltage[j].HighVoltage[ColumnIndex],
+                            data_OScopeHighVoltage[j+1].MScanInput, data_OScopeHighVoltage[j+1].HighVoltage[ColumnIndex]
+                        );
+                    }
+                }
         }
-
 }

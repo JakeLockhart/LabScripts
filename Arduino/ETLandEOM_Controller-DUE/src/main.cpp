@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include "Parameters.h"
 #include "Wavelengths.h"
+#include "LinearInterpolation.h"
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
+#include "VoltageInterpolation.h"
 #include "PowerInterpolation.h"
 #include "ChangePlane.h"
+#include "ChangeVoltage.h"
 
 //  This script is designed to control both the ETL and the EOM (Pockel Cell) in response to TTL pulses.
 //      Parameters:
@@ -27,6 +30,11 @@ void setup() {
 
     // Initialization
         PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
+        VoltageInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserVoltage);
+        analogWriteResolution(12);
+        for (int i = 0; i < TotalImagingPlanes; i++) {
+            LaserVoltage_Bits[i] = (LaserVoltage[i] / ReferenceVoltage) * 4095;
+        }
         
     // Intitialization Serial Output
 
@@ -49,21 +57,27 @@ void setup() {
                                                             if (i < TotalImagingPlanes-1) Serial.print("mW, ");
                                                         }
                                                         Serial.println("mW");
-    // Test analog write (due)
-        analogWriteResolution(12);
+        Serial.print("\tLaser Output Voltage(s): ");    for (int i = 0; i < TotalImagingPlanes; i++) {
+                                                            Serial.print(LaserVoltage[i], 4);
+                                                            if (i < TotalImagingPlanes-1) Serial.print("mV, ");
+                                                        }
+                                                        Serial.println("mV");
+        Serial.println(LaserVoltage_Bits[0]);
+        Serial.println(LaserVoltage_Bits[1]);
+        Serial.println(LaserVoltage_Bits[2]);
 
     // Interrupt
-        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
-        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePower, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangePlane, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), ChangeVoltage, RISING);
 }
 
 void loop() {
-    analogWrite(TTLPulse_EOM, 620);
-    delayMicroseconds(10);
-    analogWrite(TTLPulse_EOM, 0);
-    delayMicroseconds(10);
-    analogWrite(TTLPulse_EOM, 1020);
-    delayMicroseconds(10);
-    analogWrite(TTLPulse_EOM, 0);
-    delayMicroseconds(10);
+    //analogWrite(TTLPulse_EOM, 620);
+    //delayMicroseconds(10);
+    //analogWrite(TTLPulse_EOM, 0);
+    //delayMicroseconds(10);
+    //analogWrite(TTLPulse_EOM, 1020);
+    //delayMicroseconds(10);
+    //analogWrite(TTLPulse_EOM, 0);
+    //delayMicroseconds(10);
 }
