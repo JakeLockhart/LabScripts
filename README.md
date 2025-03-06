@@ -2,8 +2,8 @@
 Scripts for Drew Lab by Jake Lockhart
 
 ## Arduino
-- **ETLController_SG**: Control the imaging plane of the electric tuneable lens based on a TTL pulse. Original created by S. Garborg.
-- **ETLandEOM_Controller**: Modulate the X3 laser intensity in response to a TTL pulse  
+- **ETLController_SG**: Control the imaging plane of the electric tuneable lens based on a TTL pulse. Created by S. Garborg.
+- **ETLandEOM_Controller-DUE**: Control both the electric tuneable lens and electric optic modulator via an Arduino Due to modulate laser intensity & imaging depth simultaneously.  
 
 ## Functions
 - **Zap**: Clear window and close all figures  
