@@ -6,8 +6,9 @@
 #include "OscilloscopeVoltage.h"
 #include "VoltageInterpolation.h"
 #include "PowerInterpolation.h"
-#include "ChangePlane.h"
-#include "ChangeVoltage.h"
+//#include "ChangePlane.h"
+//#include "ChangeVoltage.h"
+#include "ChangePV.h"
 #include "InterruptHandler.h"
 
 //  This script is designed to control both the ETL and the EOM (Pockel Cell) in response to TTL pulses.
@@ -65,19 +66,10 @@ void setup() {
                                                         Serial.println("mV");
         Serial.println(LaserVoltage_Bits[0]);
         Serial.println(LaserVoltage_Bits[1]);
-        Serial.println(LaserVoltage_Bits[2]);
 
     // Interrupt
         attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
 }
 
 void loop() {
-    //analogWrite(TTLPulse_EOM, 620);
-    //delayMicroseconds(10);
-    //analogWrite(TTLPulse_EOM, 0);
-    //delayMicroseconds(10);
-    //analogWrite(TTLPulse_EOM, 1020);
-    //delayMicroseconds(10);
-    //analogWrite(TTLPulse_EOM, 0);
-    //delayMicroseconds(10);
 }

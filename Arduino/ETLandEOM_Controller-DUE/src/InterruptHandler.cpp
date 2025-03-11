@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include "InterruptHandler.h"
-#include "ChangePlane.h"
-#include "ChangeVoltage.h"
+#include "ChangePV.h"
 
 void InterruptHandler() {
-    ChangePlane();
-    ChangeVoltage();
+    ChangePV();
 }
