@@ -1,6 +1,4 @@
 clear; clc; format short; format compact;
-%   This script is designed to take analyze the results of .CSV files created by an oscilloscope. 
-%       Select a folder that contains the .CSV files.
 
 SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');                          % Choose folder path location
         SystemProperties.FilePath.Address = SystemProperties.FilePath.GetFolder + "\*.csv";         % Convert to filepath
