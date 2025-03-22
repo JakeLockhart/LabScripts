@@ -12,4 +12,6 @@ This script was a sanity check to confirm that multiple oscilloscope readings fo
 - **Outputs**: Graphs depicting the linear relationship between voltage and laser input intensity.
 
 ## OscopeCircuitAnalysis.m
-This script is designed to validate the values that the Arduino Due is outputing in response to a simulated MScan input signal.
+This script is designed to validate the values that the Arduino Due is outputing in response to a simulated MScan input signal. The Arduino circuit has three associated siganls that are active: Input TTL pulse from MScan software (0-5V), Output TTL pulse from Arduino Due to ETL (0-3.3V), Output analog pulse from Arduino Due to EOM (0-1.5V). The oscilloscpe can record each of these waveforms simultaneously and create a file continain a single .CSV file for each waveform and a snapshot of the oscilloscope's display. This script analyzes each of these files to determine the 'Time Lag' between signals and the magnitude of the steps for the analog pulse.
+- **Inputs**: A single folder produced from the oscilloscope's 'Save All' function. When three waveforms are active.
+- **Outputs**: Graphs depicting the raw signals, overlayed waveforms with an associated cross-correlation, graph of analog pulse with step heights identified. 
