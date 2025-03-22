@@ -25,12 +25,12 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
     end
 
 %% Cross Correlation
-    LowerBound = 850; 
-    UpperBound = 900;
+    LowerBound = 850; %850
+    UpperBound = 900; %900
 
-    NormalizedBounded_Input = Oscope.Voltage(1, [LowerBound:UpperBound]) - mean(Oscope.Voltage(1, [LowerBound:UpperBound]));
-    NormalizedBounded_ETL = Oscope.Voltage(2, [LowerBound:UpperBound]) - mean(Oscope.Voltage(2, [LowerBound:UpperBound]));
-    NormalizedBounded_EOM = Oscope.Voltage(3, [LowerBound:UpperBound]) - mean(Oscope.Voltage(3, [LowerBound:UpperBound]));
+    NormalizedBounded_Input = Oscope.Voltage(1, LowerBound:UpperBound) - mean(Oscope.Voltage(1, LowerBound:UpperBound));
+    NormalizedBounded_ETL = Oscope.Voltage(2, LowerBound:UpperBound) - mean(Oscope.Voltage(2, LowerBound:UpperBound));
+    NormalizedBounded_EOM = Oscope.Voltage(3, LowerBound:UpperBound) - mean(Oscope.Voltage(3, LowerBound:UpperBound));
 
     [Xc.Input_ETL, Lags.Input_ETL] = xcorr(NormalizedBounded_Input, NormalizedBounded_ETL, "coeff");
     [Xc.Input_EOM, Lags.Input_EOM] = xcorr(NormalizedBounded_Input, NormalizedBounded_EOM, "coeff");
@@ -118,22 +118,22 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
 
     nexttile(t2, 2)
     title("Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white'); hold on;
-    plot(Oscope.Time(1,[LowerBound:UpperBound]), Oscope.Voltage(1,[LowerBound:UpperBound]), "Color", ColorMap(1,:)); hold on;
-    plot(Oscope.Time(2,[LowerBound:UpperBound]), Oscope.Voltage(2,[LowerBound:UpperBound]), "Color", ColorMap(2,:)); hold on;
+    plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
+    plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
     nexttile(t2, 5)
     title("Simulated Input Signal & Analog Pulse to EOM", 'Color', 'white'); hold on;
-    plot(Oscope.Time(1,[LowerBound:UpperBound]), Oscope.Voltage(1,[LowerBound:UpperBound]), "Color", ColorMap(1,:)); hold on;
-    plot(Oscope.Time(3,[LowerBound:UpperBound]), Oscope.Voltage(3,[LowerBound:UpperBound]), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
+    plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
     ylabel("Voltage [V]")
     nexttile(t2, 8)
     title("TTL Pulse to ETL and Analog Pulse to EOM", 'Color', 'white'); hold on;
-    plot(Oscope.Time(2,[LowerBound:UpperBound]), Oscope.Voltage(2,[LowerBound:UpperBound]), "Color", ColorMap(2,:)); hold on;
-    plot(Oscope.Time(3,[LowerBound:UpperBound]), Oscope.Voltage(3,[LowerBound:UpperBound]), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
+    plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
     nexttile(t2, 11)
     title("Input Signal Overlayed with Output Signals", 'Color', 'white'); hold on;
-    plot(Oscope.Time(1,[LowerBound:UpperBound]), Oscope.Voltage(1,[LowerBound:UpperBound]), "Color", ColorMap(1,:)); hold on;
-    plot(Oscope.Time(2,[LowerBound:UpperBound]), Oscope.Voltage(2,[LowerBound:UpperBound]), "Color", ColorMap(2,:)); hold on;
-    plot(Oscope.Time(3,[LowerBound:UpperBound]), Oscope.Voltage(3,[LowerBound:UpperBound]), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
+    plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
+    plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
     xlabel("Time [\mus]");
 
     nexttile(t2, 3)
@@ -187,5 +187,3 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
     for i = 2:size(VoltageStep,2)
         fprintf('\t\t%.6f V\n', VoltageStep(i)-VoltageStep(1));
     end
-
-
