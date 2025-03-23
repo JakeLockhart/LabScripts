@@ -1,17 +1,18 @@
 clear; clc; format short; format compact;
 
-SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');                          % Choose folder path location
-        SystemProperties.FilePath.Address = SystemProperties.FilePath.GetFolder + "\*.csv";         % Convert to filepath
-        SystemProperties.FilePath.Folder = dir(SystemProperties.FilePath.Address);                  % Identify the folder directory 
-        SystemProperties.FilePath.Data.Length = length(SystemProperties.FilePath.Folder);           % Determine the number of files in folder directory
-        SystemProperties.FilePath.Data.Address = erase(SystemProperties.FilePath.Address,"*.csv");  % Create beginning address for file path
-        [FolderPath, ~, ~] = fileparts(SystemProperties.FilePath.Address);
-        SystemProperties.FilePath.CurrentFolder = regexp(FolderPath, '([^\\]+)$', 'match', 'once');
+Lookup.FileType = '*.csv';                                                          % Choose file type
+    Lookup.FolderAddress = uigetdir('*.*','Select a file');                             % Choose folder path location
+    Lookup.AllFiles = Lookup.FolderAddress + "\" + Lookup.FileType;                     % Convert to filepath
+    Lookup.FolderAddress = erase(Lookup.AllFiles, Lookup.FileType);                     % Create beginning address for file path
+    [Lookup.CurrentFolder, ~, ~] = fileparts(Lookup.AllFiles);                          % Collect folder information
+    Lookup.CurrentFolder = regexp(Lookup.CurrentFolder, '([^\\]+)$', 'match', 'once');  % Determine the parent folder
+    Lookup.FolderInfo = dir(Lookup.AllFiles);                                           % Identify the folder directory
+    Lookup.FileCount = length(Lookup.FolderInfo);                                       % Determine the number of files in folder directory
 
 %% Read .CSV file
-    for i = 1:SystemProperties.FilePath.Data.Length
-        Name = erase(SystemProperties.FilePath.Folder(i).name, ".csv");
-        TempFile = readtable(fullfile(SystemProperties.FilePath.Data.Address, Name));
+    for i = 1:Lookup.FileCount
+        Name = erase(Lookup.FolderInfo(i).name, ".csv");
+        TempFile = readtable(fullfile(Lookup.FolderAddress, Name));
         Oscope.RecordLength(i) = TempFile{1,2};
         Oscope.SampleInterval(i) = TempFile{2,2};
         Oscope.TriggerPoint(i) = TempFile{3,2};
@@ -57,7 +58,7 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
 
 
 %% Plot Raw Signals
-    ColorMap = hsv(SystemProperties.FilePath.Data.Length);
+    ColorMap = hsv(Lookup.FileCount);
 
     figure(1);
     t1 = tiledlayout(3,1);
@@ -71,7 +72,7 @@ SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');          
     title("TTL Pulses Output to ETL", 'Color', 'white'); hold on;
     nexttile(3);
     title("Analog Pulses Output to Amplifier (302RM)", 'Color', 'white'); hold on;
-    for i = 1:SystemProperties.FilePath.Data.Length
+    for i = 1:Lookup.FileCount
         nexttile(t1, i);
         plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:));
         set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');

@@ -1,17 +1,18 @@
 clear; clc; format short; format compact;
 
-SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');                          % Choose folder path location
-        SystemProperties.FilePath.Address = SystemProperties.FilePath.GetFolder + "\*.csv";         % Convert to filepath
-        SystemProperties.FilePath.Folder = dir(SystemProperties.FilePath.Address);                  % Identify the folder directory 
-        SystemProperties.FilePath.Data.Length = length(SystemProperties.FilePath.Folder);           % Determine the number of files in folder directory
-        SystemProperties.FilePath.Data.Address = erase(SystemProperties.FilePath.Address,"*.csv");  % Create beginning address for file path
-        [FolderPath, ~, ~] = fileparts(SystemProperties.FilePath.Address);
-        SystemProperties.FilePath.CurrentFolder = regexp(FolderPath, '([^\\]+)$', 'match', 'once');
+Lookup.FileType = '*.csv';                                                          % Choose file type
+    Lookup.FolderAddress = uigetdir('*.*','Select a file');                             % Choose folder path location
+    Lookup.AllFiles = Lookup.FolderAddress + "\" + Lookup.FileType;                     % Convert to filepath
+    Lookup.FolderAddress = erase(Lookup.AllFiles, Lookup.FileType);                     % Create beginning address for file path
+    [Lookup.CurrentFolder, ~, ~] = fileparts(Lookup.AllFiles);                          % Collect folder information
+    Lookup.CurrentFolder = regexp(Lookup.CurrentFolder, '([^\\]+)$', 'match', 'once');  % Determine the parent folder
+    Lookup.FolderInfo = dir(Lookup.AllFiles);                                           % Identify the folder directory
+    Lookup.FileCount = length(Lookup.FolderInfo);                                       % Determine the number of files in folder directory
 
 %% Read .CSV file
-for i = 1:SystemProperties.FilePath.Data.Length
-    Name = erase(SystemProperties.FilePath.Folder(i).name, ".csv");
-    TempFile = readtable(fullfile(SystemProperties.FilePath.Data.Address, Name));
+for i = 1:Lookup.FileCount
+    Name = erase(Lookup.FolderInfo(i).name, ".csv");
+    TempFile = readtable(fullfile(Lookup.FolderAddress, Name));
     Oscope.RecordLength(i) = TempFile{1,2};
     Oscope.SampleInterval(i) = TempFile{2,2};
     Oscope.TriggerPoint(i) = TempFile{3,2};
@@ -25,7 +26,7 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 
 %% Cross Correlation to Sync Waveforms
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     [xc, lags] = xcorr(Oscope.Voltage(end,:), Oscope.Voltage(i,:));
     [~, Index] = max(xc);
     Shift = lags(Index);
@@ -33,8 +34,8 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 
 %% Histogram & High/Low Signal Data Analysis
-WF_T.TotalBins = linspace(0, max(max(1.25*Oscope.Voltage)), SystemProperties.FilePath.Data.Length*10);
-for i = 1:SystemProperties.FilePath.Data.Length
+WF_T.TotalBins = linspace(0, max(max(1.25*Oscope.Voltage)), Lookup.FileCount*10);
+for i = 1:Lookup.FileCount
     [Count, BinEdge] = histcounts(Oscope.AlignedVoltage(i,:), WF_T.TotalBins);
     WF_T.Count(i,:) = Count;
     WF_T.BinEdge(i,:) = BinEdge;
@@ -62,7 +63,7 @@ for i = 1:SystemProperties.FilePath.Data.Length
 end
 
 %% Waveform Characteristics
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     Oscope.BinarySignal(i,:) = Oscope.AlignedVoltage(i,:) > (LowSignal.Voltage(i) + HighSignal.Voltage(i))/2;
     [xc, lags] = xcorr(Oscope.BinarySignal(end,:), Oscope.BinarySignal(i,:));
     [~, Index] = max(xc);
@@ -88,7 +89,7 @@ Waveform.Global.FallTime = mean(ft([4,end]));
 figure(1)
 t = tiledlayout(6,6);
 title(t, "MScan Signal Processing", 'Color', 'white')
-ColorMap = hsv(SystemProperties.FilePath.Data.Length);
+ColorMap = hsv(Lookup.FileCount);
 set(gcf,"Color", [0 0 0])
 nexttile(1, [2,2])
 title("Raw Signal Data", 'Color', 'white')
@@ -103,7 +104,7 @@ title("Aligned Single Step Waveforms", 'Color', 'white')
 xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
 hold on;
 
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     nexttile(1, [2,2])
     plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); 
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
@@ -157,7 +158,7 @@ figure(6)
 t = tiledlayout(3,1);
 title(t, "MScan Oscilloscope Data Processing", 'Color', 'white')
 ylabel(t, "Waveform Voltage [mV]", 'Color', 'white');
-ColorMap = hsv(SystemProperties.FilePath.Data.Length);
+ColorMap = hsv(Lookup.FileCount);
 set(gcf,"Color", [0 0 0])
 nexttile(1)
 title("Raw Signal Data", 'Color', 'white')
@@ -179,7 +180,7 @@ xlabel("Time [\mus]", 'Color', 'white');
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
 
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     nexttile(1)
     plot(Oscope.Time(i,:), Oscope.Voltage(i,:), "Color", ColorMap(i,:)); hold on;
     nexttile(2)
@@ -194,7 +195,7 @@ pause(1)
 figure(7)
 t = tiledlayout(1,3);
 title(t, "Voltage Step & Histogram", 'Color', 'white');
-ColorMap = hsv(SystemProperties.FilePath.Data.Length);
+ColorMap = hsv(Lookup.FileCount);
 set(gcf,"Color", [0 0 0])
 nexttile(1)    
 title("Single Step Waveforms", 'Color', 'white')
@@ -219,7 +220,7 @@ set(gca, 'XColor', 'white', 'YColor', 'white');
 Interval = [-1,0:5:100];
 grid on; axis tight;
 
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     nexttile(1)
     plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:)); hold on;
     nexttile(2)
@@ -239,16 +240,16 @@ end
 
 %% File Output
 Results.Data = [Interval', LowSignal.Voltage, HighSignal.Voltage];
-Results.NewFile = 'MScan HighLow Voltage - ' + SystemProperties.FilePath.CurrentFolder + '.txt';
+Results.NewFile = 'MScan HighLow Voltage - ' + Lookup.CurrentFolder + '.txt';
 Results.fid = fopen(Results.NewFile, 'w');
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     fprintf(Results.fid, '%d\t%.6f\t%.6f\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3));
 end
 fclose(Results.fid);
 
 disp('Data written to ' + Results.NewFile)
 fprintf('\n\tInput Intensity\tLow Signal Voltage\tHigh Signal Voltage\n');
-for i = 1:SystemProperties.FilePath.Data.Length
+for i = 1:Lookup.FileCount
     fprintf('\t%d%%\t\t%.6f mV\t\t%.6f mV\n', Results.Data(i,1), Results.Data(i,2), Results.Data(i,3))
 end
 

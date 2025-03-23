@@ -1,19 +1,18 @@
 clear; clc; close all; format short; format compact;
 
-% Select folder and retrieve file list
-SystemProperties.FileType = '*.csv';  
-SystemProperties.FilePath.GetFolder = uigetdir('*.*','Select a file');                           
-SystemProperties.FilePath.Address = SystemProperties.FilePath.GetFolder + "\" + SystemProperties.FileType;         
-SystemProperties.FilePath.Folder = dir(SystemProperties.FilePath.Address);                    
-SystemProperties.FilePath.Data.Length = length(SystemProperties.FilePath.Folder);           
-SystemProperties.FilePath.Data.Address = erase(SystemProperties.FilePath.Address, SystemProperties.FileType);  
-[FolderPath, ~, ~] = fileparts(SystemProperties.FilePath.Address);
-SystemProperties.FilePath.CurrentFolder = regexp(FolderPath, '([^\\]+)$', 'match', 'once');
+Lookup.FileType = '*.csv';                                                          % Choose file type
+    Lookup.FolderAddress = uigetdir('*.*','Select a file');                             % Choose folder path location
+    Lookup.AllFiles = Lookup.FolderAddress + "\" + Lookup.FileType;                     % Convert to filepath
+    Lookup.FolderAddress = erase(Lookup.AllFiles, Lookup.FileType);                     % Create beginning address for file path
+    [Lookup.CurrentFolder, ~, ~] = fileparts(Lookup.AllFiles);                          % Collect folder information
+    Lookup.CurrentFolder = regexp(Lookup.CurrentFolder, '([^\\]+)$', 'match', 'once');  % Determine the parent folder
+    Lookup.FolderInfo = dir(Lookup.AllFiles);                                           % Identify the folder directory
+    Lookup.FileCount = length(Lookup.FolderInfo);                                       % Determine the number of files in folder directory
 
 %% Read .CSV files
-for i = 1:SystemProperties.FilePath.Data.Length
-    Name = erase(SystemProperties.FilePath.Folder(i).name, ".csv");
-    TempFile = readtable(fullfile(SystemProperties.FilePath.Data.Address, Name));
+for i = 1:Lookup.FileCount
+    Name = erase(Lookup.FolderInfo(i).name, ".csv");
+    TempFile = readtable(fullfile(Lookup.FolderAddress, Name));
     Oscope.Time(i,:) = TempFile{:,4} / TempFile{2,2}; % Normalize time
     Oscope.Voltage(i,:) = TempFile{:,5};
 end
