@@ -21,6 +21,11 @@ void ChangePV() {
             }
         }
     else {
+        analogWrite(TTLPulse_EOM, LaserVoltage_Bits[i]);
+
+        delayMicroseconds(Delay);
+        
+        analogWrite(TTLPulse_EOM, 0);
         CurrentImagingPlane--;
     }
 }
