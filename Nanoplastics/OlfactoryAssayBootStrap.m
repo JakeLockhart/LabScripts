@@ -16,7 +16,6 @@ hold on;
 scatter(ones(size(Data.Saline)), Data.Saline, 50, 'r', 'filled', 'MarkerFaceAlpha', 0.6);
 scatter(2 * ones(size(Data.Nanoplastic)), Data.Nanoplastic, 50, 'b', 'filled', 'MarkerFaceAlpha', 0.6);
 
-
 % Histogram Setup
 figure(2)
 TotalBins = 18;
@@ -43,7 +42,7 @@ hold off;
 
 % BootStrapping
 figure(3)
-Sample = 100000;
+Sample = 10000;
 BootStrap.Saline = bootstrp(Sample, @mean, Data.Saline);
 ConfidenceInterval.Saline = bootci(Sample, @mean, Data.Saline);
 AverageDetectionTime.Saline = mean(Data.Saline);
@@ -53,14 +52,6 @@ BootStrap.Nanoplastic = bootstrp(Sample, @mean, Data.Nanoplastic);
 ConfidenceInterval.Nanoplastic = bootci(Sample, @mean, Data.Nanoplastic);
 AverageDetectionTime.Nanoplastic = mean(Data.Nanoplastic);
 
-[Peak.Saline, Location.Saline] = findpeaks(fi.Saline);
-[Max.Saline, Index.Saline] = max(Peak.Saline);
-[Peak.Nanoplastic, Location.Nanoplastic] = findpeaks(fi.Nanoplastic);
-[Max.Nanoplastic, Index.Nanoplastic] = max(Peak.Nanoplastic);
-
-Difference.Observed = AverageDetectionTime.Nanoplastic - AverageDetectionTime.Saline;
-Difference.BootStrap = BootStrap.Nanoplastic - BootStrap.Saline;
-pValue = mean(abs(Difference.BootStrap) >= abs(Difference.Observed));
 
 t = tiledlayout(2,2);
 title(t, "Olfactory Assay: Buried Food-Seeking Test");
@@ -79,16 +70,4 @@ title("Food Detection: All Mice");
 hold off;
 
 %% Results
-fprintf("BootStrap Analysis\n");
-fprintf("\tSaline Group:\n");
-fprintf("\t\tTotal Sample: %g\n", size(Data.Saline,2));
-fprintf("\t\tPeak Probability Density = %0.5f\n", Max.Saline)
-fprintf("\t\tFood Detection Time at Peak Probability = %0.2fs\n", xi.Saline(Location.Saline));
-fprintf("\t\tConfidence Interval = %0.5fs : %0.5fs\n", ConfidenceInterval.Saline(1), ConfidenceInterval.Saline(2))
-fprintf("\tNanoplastic Group:\n");
-fprintf("\t\tTotal Sample: %g\n", size(Data.Nanoplastic,2));
-fprintf("\t\tPeak Probability Density = %0.5f\n", Max.Nanoplastic)
-fprintf("\t\tFood Detection Time at Peak Probability = %0.2fs\n", xi.Nanoplastic(Location.Nanoplastic));
-fprintf("\t\tConfidence Interval = %0.5fs : %0.5fs\n", ConfidenceInterval.Nanoplastic(1), ConfidenceInterval.Nanoplastic(2))
-
-fprintf("P-Value: %g", pValue)
+% HOW TO GET P-VALUE FROM BOOTSTRAP() & KSDENSITY()?
