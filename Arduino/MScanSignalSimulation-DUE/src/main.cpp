@@ -1,32 +1,32 @@
 #include <Arduino.h>
 
-#define POT_PIN A0   // Potentiometer connected to A0
-#define DAC_PIN DAC0 // DAC output pin
+// Arduino Due Board Pins
+int Potentiometer = A0;
+int MScanOutput = DAC0;
 
-int Amplitude_mV = 700; // Desired amplitude in millivolts (mV)
-int FineTuneRange_mV = 100; // Fine-tuning range ±50mV
+// Parameters
+int TTL_Amplitude = 700;    // Desired amplitude [mV]
+int PPAdjust = 100;         // Fine tuning range [±50mV]
+int PulseWidth = 100;       // Pulse width duration [um]
+int PulseGap = 100;         // Pulse gap duration [um]
+int TuneRange = 600;        // Fine-tuning range for potentiometer [±100mV]
+int Amplitude_Bits = map(TTL_Amplitude, 550, 3300, 0, 4095);    // Convert Amplitude from mV to DAC (0.5-3.3V = 0-4095)
+
 
 void setup() {
-    pinMode(POT_PIN, INPUT);
-    pinMode(DAC_PIN, OUTPUT);
-    analogReadResolution(12);  // 12-bit ADC (0-4095)
-    analogWriteResolution(12); // 12-bit DAC (0-4095)
+    pinMode(MScanOutput, OUTPUT);   // Setup pins
+    analogWriteResolution(12);      // Read/Write resolution is 12-bits
+    pinMode(Potentiometer, INPUT);
+    analogReadResolution(12);    
 }
 
 void loop() {
-    // Convert Amplitude from mV to DAC units (0-4095 for 0-3.3V)
-    int Amplitude_Bits = (Amplitude_mV * 4095) / 3300;
+    int PValue = analogRead(Potentiometer);                                         // Read potentiometer analog input value
+    int TuneBits = map(PValue, 0, 4095, -TuneRange, TuneRange) * 4095 / (3300-550); // Map analog input to bit range and convert to mV range
+    int MScanOutput_Amplitude = constrain(Amplitude_Bits + TuneBits, 0, 4095);      // Create boundaries so that analog input does not exceed DAC range
 
-    // Read potentiometer value (0-4095) and map to fine-tune range
-    int potValue = analogRead(POT_PIN);
-    int fineTuneBits = map(potValue, 0, 4095, -FineTuneRange_mV, FineTuneRange_mV) * 4095 / 3300;
-
-    // Apply fine-tuning, ensuring the value stays within DAC limits
-    int outputValue = constrain(Amplitude_Bits + fineTuneBits, 0, 4095);
-
-    // Generate square wave with fine-tuned amplitude
-    analogWrite(DAC_PIN, outputValue);
-    delayMicroseconds(100);
-    analogWrite(DAC_PIN, 0);
-    delayMicroseconds(100);
+    analogWrite(MScanOutput, MScanOutput_Amplitude);    // Create TTL pulse
+    delayMicroseconds(PulseWidth);
+    analogWrite(MScanOutput, 0);
+    delayMicroseconds(PulseGap);
 }
