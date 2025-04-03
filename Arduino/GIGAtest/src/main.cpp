@@ -2,26 +2,48 @@
 
 #define DAC0 A12
 
-int pulseWidth = 100;
-int pulseGap = 200;
-// int values[] = {100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000}; 
-int values[] = {2000};
+volatile int counter = 0;
+
+//void myISR() {
+//    analogWrite(DAC0, 1000);
+//    digitalWrite(7, HIGH);
+//    analogWrite(DAC0, 0);
+//    digitalWrite(7,LOW);
+//}
+//
+//void setup() {
+//    Serial.begin(9600);
+//    pinMode(2, INPUT);
+//    pinMode(DAC0, OUTPUT);
+//    analogWriteResolution(12);
+//    attachInterrupt(digitalPinToInterrupt(2), myISR, RISING);
+//}
+//
+//void loop() {
+//    Serial.println(counter);
+//    delay(100);
+//}
+
+volatile bool updateDAC = false;  // Flag to trigger DAC update
+
+void myISR() {
+    updateDAC = true;  // Set flag inside ISR
+}
 
 void setup() {
-  pinMode(DAC0, OUTPUT);
-  analogWriteResolution(12); 
-  Serial.begin(9600);
-  Serial.print(values[1]);
+    pinMode(2, INPUT);  // Standard input mode since TTL actively drives the pin
+    pinMode(7, OUTPUT); // Output pin
+    analogWriteResolution(12); // Set DAC resolution to 12-bit
+    attachInterrupt(digitalPinToInterrupt(2), myISR, RISING); // Trigger on rising edge
 }
 
 void loop() {
-  for (int i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-    analogWrite(DAC0, values[i]);
-    delayMicroseconds(pulseWidth);
-    analogWrite(DAC0, 0);
-    delayMicroseconds(pulseGap);
-  }
-  Serial.println("Hello World");
-  delay(10);
-  Serial.println(values[1]);
+    if (updateDAC) {
+        analogWrite(A12, 1000);  // Output 1000 (out of 4095 for 12-bit DAC)
+        delayMicroseconds(10);   // Small delay
+        analogWrite(A12, 0);     // Reset to 0V
+        updateDAC = false;       // Clear flag
+    }
 }
+
+
