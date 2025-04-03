@@ -2,6 +2,8 @@ clear; clc; format short; format compact;
 
 addpath('C:\Workspace\LabScripts\Functions')
 Lookup = FileLookup('csv');
+[round(LowerBound), round(UpperBound), Canceled] = UserDefinedPeaks(Lookup);
+pause(1);
 
 %% Read .CSV file
     for i = 1:Lookup.FileCount
@@ -20,9 +22,6 @@ Lookup = FileLookup('csv');
     end
 
 %% Cross Correlation
-    LowerBound = 850; %850
-    UpperBound = 900; %900
-
     NormalizedBounded_Input = Oscope.Voltage(1, LowerBound:UpperBound) - mean(Oscope.Voltage(1, LowerBound:UpperBound));
     NormalizedBounded_ETL = Oscope.Voltage(2, LowerBound:UpperBound) - mean(Oscope.Voltage(2, LowerBound:UpperBound));
     NormalizedBounded_EOM = Oscope.Voltage(3, LowerBound:UpperBound) - mean(Oscope.Voltage(3, LowerBound:UpperBound));
