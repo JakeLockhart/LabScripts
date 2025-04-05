@@ -2,6 +2,7 @@ clear; clc; format short; format compact;
 
 addpath('C:\Workspace\LabScripts\Functions')
 Lookup = FileLookup('csv');
+[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, 1, 'all', 'UseAligned');
 
 %% Read .CSV file
 for i = 1:Lookup.FileCount
@@ -84,6 +85,7 @@ figure(1)
 t = tiledlayout(6,6);
 title(t, "MScan Signal Processing", 'Color', 'white')
 ColorMap = hsv(Lookup.FileCount);
+Gap = Oscope.Time(1,UpperBound) - Oscope.Time(1,LowerBound);
 set(gcf,"Color", [0 0 0])
 nexttile(1, [2,2])
 title("Raw Signal Data", 'Color', 'white')
@@ -106,12 +108,12 @@ for i = 1:Lookup.FileCount
     nexttile(3, [2,2])
     plot(Oscope.Time(i,:), Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    xlim([-3*Waveform.Global.PulsePeriod, 3*Waveform.Global.PulsePeriod])
+    xlim([Oscope.Time(1,LowerBound)-2*Gap, Oscope.Time(1,UpperBound)+2*Gap]);
     hold on;
     nexttile(5, [2,2])
     plot(Oscope.Time(i,:),Oscope.AlignedVoltage(i,:), "Color", ColorMap(i,:));
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
-    xlim([-0.5*Waveform.Global.PulsePeriod, 1.0*Waveform.Global.PulsePeriod]); 
+    xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]); 
     ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
     nexttile()
     bar(WF_S.BinCenter(i,:), WF_S.Count(i,:), 'FaceColor', ColorMap(i,:), "EdgeColor", "none"); 
@@ -162,13 +164,13 @@ set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
 nexttile(2)
 title("Aligned Signal Data", 'Color', 'white')
-xlim([-3*Waveform.Global.PulsePeriod, 3*Waveform.Global.PulsePeriod])
+xlim([Oscope.Time(1,LowerBound)-2*Gap, Oscope.Time(1,UpperBound)+2*Gap]);
 set(gca, 'Color', [0 0 0]); 
 set(gca, 'XColor', 'white', 'YColor', 'white');
 hold on;
 nexttile(3)    
 title("Aligned Single Step Waveforms", 'Color', 'white')
-xlim([-0*Waveform.Global.PulsePeriod, 1*Waveform.Global.PulsePeriod]); 
+xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]);
 ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 xlabel("Time [\mus]", 'Color', 'white');
 set(gca, 'Color', [0 0 0]); hold on;
@@ -194,7 +196,7 @@ set(gcf,"Color", [0 0 0])
 nexttile(1)    
 title("Single Step Waveforms", 'Color', 'white')
 xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
-xlim([-0.5*Waveform.Global.PulsePeriod, 1.5*Waveform.Global.PulsePeriod]); 
+xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]);
 ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
@@ -209,6 +211,7 @@ hold on;
 nexttile(3)
 title("High & Low Signal Voltages", 'Color', 'white')
 xlabel("Laser Input Intensity", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
+xlim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
 Interval = [-1,0:5:100];
