@@ -1,7 +1,4 @@
 function [X1, X2, canceled] = UserDefinedPeaks(Lookup, numTiles, plotMode, useAlignedData)
-    % Initialize Temp structure if it isn't already
-    Temp = struct();
-
     % Read data from CSV files and populate Temp structure
     for i = 1:Lookup.FileCount
         Name = erase(Lookup.FolderInfo(i).name, ".csv");
