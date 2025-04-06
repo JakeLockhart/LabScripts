@@ -19,11 +19,6 @@
 //          - Adjust the ETL in response to a TTL pulse
 //          - Adjust the EOM in response to a TTL pulse to match new focal depth(s)
 
-volatile bool updateDAC = false;
-void TestInterrupt(){
-    updateDAC = true;
-}
-
 void setup() {
     Serial.begin(9600);
     while (!Serial){};
@@ -46,15 +41,9 @@ void setup() {
         MonitorSerialOutput();
 
     // Interrupt
-        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan),TestInterrupt, RISING); // WTF IS GOING WRONG???? CRASH OR UNRECOGNIZED????
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
 }
 
 void loop() {
-    if (updateDAC) {
-        InterruptHandler();
-        updateDAC = false;
-        Serial.println(updateDAC);
-    }
 }
 
