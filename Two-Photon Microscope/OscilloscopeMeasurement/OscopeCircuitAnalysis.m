@@ -1,9 +1,8 @@
-clear; clc; format short; format compact;
+clear; clc; format short g; format compact;
 
 addpath('C:\Workspace\LabScripts\Functions')
 Lookup = FileLookup('csv');
-[round(LowerBound), round(UpperBound), Canceled] = UserDefinedPeaks(Lookup);
-pause(1);
+[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, 3, 'single', 'UseRaw');
 
 %% Read .CSV file
     for i = 1:Lookup.FileCount
@@ -41,14 +40,16 @@ pause(1);
     [Count, BinEdge] = histcounts(Oscope.Voltage(3,:), TotalBins);
     BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2;
 
-    Temp.Extension = [0,1,0];
-    Temp.Count = [Count, Temp.Extension];
-    [Peaks, Locations] = findpeaks(findpeaks(Temp.Count));
-    for i = 1:size(Peaks, 2)
-        index(i) = find(Count == Peaks(i));
-    end
-    VoltageStep = BinCenter(index);
+    Count(Count == 1) = 0;
+    [Peaks.Standard, Index.Standard] = findpeaks(Count);
+    [Peaks.TrailingEdge, Index.TrailingEdge] = max(Count(Index.Standard(end):end));
+    [Peaks.LeadingEdge, Index.LeadingEdge] = max(Count);
+    [Peaks.Overall, Index.Overall] = max(BinCenter);
+    Peaks.All = [BinCenter(Index.LeadingEdge), BinCenter(Index.Standard), BinCenter(Index.Standard(end)+Index.TrailingEdge-1), BinCenter(Index.Overall)];
+    Counts.All = [Count(Index.LeadingEdge), Count(Index.Standard), Count(Index.Standard(end)+Index.TrailingEdge-1), Count(Index.Overall)];
 
+    [Peaks.Actual, Index.Unique] = unique(Peaks.All, 'stable');
+    Counts.Actual = Counts.All(Index.Unique);
 
 %% Plot Raw Signals
     ColorMap = hsv(Lookup.FileCount);
@@ -154,17 +155,39 @@ pause(1);
     xlabel("Lag [\mus]")
 
 %% Plot Histograms
-    figure(3);
-    t3 = tiledlayout(1,1);
+    figure(3)
+    t3 = tiledlayout(1,1); 
     title(t3, "Voltage Steps & Histogram", "Color", 'white');
+    set(gcf, "Color", [0, 0, 0]); 
+    nexttile(t3,1); 
+    title("Step Wave Analysis of Analog Pulses", "Color", 'white'); hold on;
+    xlabel("Voltage [V]", "Color", 'white'); hold on;
+    ylabel("Count", "Color", 'white'); hold on;
+    bar(BinCenter, Count, 'FaceColor', [0.7, 0.2, 0.2]); 
+    set(gca, 'Color', 'k');
+    set(gca, 'XColor', 'w', 'YColor', 'w'); 
+    grid on;
+    set(gca, 'GridColor', 'w'); 
+    xlim([0, max(Oscope.Voltage(3,:))*1.1]);
+    ylim([0,mean(Counts.Actual(2:end))*5]);
+    for i = 1:size(Peaks.Actual,2)
+        xline(Peaks.Actual(i), '--', "Color", 'white', 'label', num2str(Peaks.Actual(i)) + " V")
+    end
+
+    figure(4);
+    t4 = tiledlayout(1,1);
+    title(t4, "Voltage Steps & Histogram", "Color", 'white');
     set(gcf, "Color", [0 0 0]);
-    nexttile(t3, 1)
+    nexttile(t4, 1)
     title("Analog Pulses from Arduino Due", "Color", 'white'); hold on;
+    ylabel("Voltage [V]", "Color", 'white'); hold on;
+    xlabel("Time [\mus]");
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); 
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
     axis tight; hold on;
-    for i = 1:size(VoltageStep, 2)
-        yline(VoltageStep(i), '--', "Color", 'white', 'Label', [num2str(VoltageStep(i)) + " V"]);
+    ylim([0, max(Oscope.Voltage(3,:))*1.1])
+    for i = 1:size(Peaks.Actual, 2)
+        yline(Peaks.Actual(i), '--', "Color", 'white', 'Label', [num2str(Peaks.Actual(i)) + " V"]);
     end
 
 %% Results
@@ -173,11 +196,11 @@ pause(1);
     fprintf('\t\tThe signal to the ETL lags the simulated MScan pulse by %.2f μs\n', Shift.Input_ETL)
     fprintf('\t\tThe signal to the EOM lags the simulated MScan pulse by %.2f μs\n', Shift.Input_EOM)
     fprintf('\t\tThe signal to the EOM lags the signal to the ETL by %.2f μs\n', Shift.ETL_EOM)
-    fprintf('\tA total of %d analog steps were detected with voltage values of:\n', size(VoltageStep,2)-1);
-    for i = 2:size(VoltageStep,2)
-        fprintf('\t\t%.6f V\n', VoltageStep(i))
+    fprintf('\tA total of %d analog steps were detected with voltage values of:\n', size(Peaks.Actual,2)-1);
+    for i = 2:size(Peaks.Actual,2)
+        fprintf('\t\t%.6f V\n', Peaks.Actual(i))
     end
     fprintf('\tThe peak-to-peak amplitude for each step is:\n');
-    for i = 2:size(VoltageStep,2)
-        fprintf('\t\t%.6f V\n', VoltageStep(i)-VoltageStep(1));
+    for i = 2:size(Peaks.Actual,2)
+        fprintf('\t\t%.6f V\n', Peaks.Actual(i)-Peaks.Actual(1));
     end
