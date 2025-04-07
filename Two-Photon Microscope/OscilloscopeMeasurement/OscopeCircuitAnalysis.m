@@ -108,7 +108,7 @@ Lookup = FileLookup('csv');
     plot(Oscope.Time(2,:), Oscope.Voltage(2,:), "Color", ColorMap(2,:)); hold on;
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
-    xlim([-250,250]); hold on;
+    xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]); hold on;
     xlabel("Time [\mus]");
 
     nexttile(t2, 2)
@@ -171,7 +171,7 @@ Lookup = FileLookup('csv');
     xlim([0, max(Oscope.Voltage(3,:))*1.1]);
     ylim([0,mean(Counts.Actual(2:end))*5]);
     for i = 1:size(Peaks.Actual,2)
-        xline(Peaks.Actual(i), '--', "Color", 'white', 'label', num2str(Peaks.Actual(i)) + " V")
+        xlines(i) = xline(Peaks.Actual(i), '--', "Color", 'white', 'label', num2str(Peaks.Actual(i)) + " V");
     end
 
     figure(4);
@@ -187,7 +187,7 @@ Lookup = FileLookup('csv');
     axis tight; hold on;
     ylim([0, max(Oscope.Voltage(3,:))*1.1])
     for i = 1:size(Peaks.Actual, 2)
-        yline(Peaks.Actual(i), '--', "Color", 'white', 'Label', [num2str(Peaks.Actual(i)) + " V"]);
+        ylines(i) = yline(Peaks.Actual(i), '--', "Color", 'white', 'Label', [num2str(Peaks.Actual(i)) + " V"]);
     end
 
 %% Results
@@ -197,10 +197,14 @@ Lookup = FileLookup('csv');
     fprintf('\t\tThe signal to the EOM lags the simulated MScan pulse by %.2f μs\n', Shift.Input_EOM)
     fprintf('\t\tThe signal to the EOM lags the signal to the ETL by %.2f μs\n', Shift.ETL_EOM)
     fprintf('\tA total of %d analog steps were detected with voltage values of:\n', size(Peaks.Actual,2)-1);
+    fprintf('\t\t');
     for i = 2:size(Peaks.Actual,2)
-        fprintf('\t\t%.6f V\n', Peaks.Actual(i))
+        fprintf('%.6f V, ', Peaks.Actual(i))
     end
+    fprintf('\n');
     fprintf('\tThe peak-to-peak amplitude for each step is:\n');
+    fprintf('\t\t');
     for i = 2:size(Peaks.Actual,2)
-        fprintf('\t\t%.6f V\n', Peaks.Actual(i)-Peaks.Actual(1));
+        fprintf('%.6f V, ', Peaks.Actual(i)-Peaks.Actual(1));
     end
+    fprintf('\nRemove incorrect bins with delete([xlines(),ylines()])');
