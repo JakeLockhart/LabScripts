@@ -16,7 +16,13 @@ for i = 1:Lookup.FileCount
     Oscope.HorizontalScale(i) = TempFile{12,2};
     Oscope.Yzero(i) = TempFile{14,2};
     Oscope.ProbeAtten(i) = TempFile{15,2};
-    Oscope.Time(i,:) = TempFile{:,4}/Oscope.SampleInterval(i);
+    Oscope.TimeInterval_dt(i) =  Oscope.SampleInterval(i)./Oscope.RecordLength(i);
+    Oscope.TotalTime_Tnet(i) =  Oscope.SampleInterval(i).*Oscope.RecordLength(i);
+    timeIndices = linspace(-Oscope.RecordLength(i)/2, Oscope.RecordLength(i)/2, Oscope.RecordLength(i));
+    Oscope.Time(i,:) = 1000 * timeIndices * Oscope.SampleInterval(i);
+
+
+    %Oscope.Time(i,:) = TempFile{:,4}/Oscope.SampleInterval(i);
     Oscope.Voltage(i,:) = TempFile{:,5};
 end
 
@@ -89,15 +95,15 @@ Gap = Oscope.Time(1,UpperBound) - Oscope.Time(1,LowerBound);
 set(gcf,"Color", [0 0 0])
 nexttile(1, [2,2])
 title("Raw Signal Data", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+xlabel("Time [ms]", 'Color', 'white'); ylabel("Voltage [mV]");
 hold on;
 nexttile(3, [2,2])
 title("Aligned Signal Data", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+xlabel("Time [ms]", 'Color', 'white'); ylabel("Voltage [mV]");
 hold on;
 nexttile(5, [2,2])
 title("Aligned Single Step Waveforms", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]");
+xlabel("Time [ms]", 'Color', 'white'); ylabel("Voltage [mV]");
 hold on;
 
 for i = 1:Lookup.FileCount
@@ -172,7 +178,7 @@ nexttile(3)
 title("Aligned Single Step Waveforms", 'Color', 'white')
 xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]);
 ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
-xlabel("Time [\mus]", 'Color', 'white');
+xlabel("Time [ms]", 'Color', 'white');
 set(gca, 'Color', [0 0 0]); hold on;
 set(gca, 'XColor', 'white', 'YColor', 'white');
 
@@ -195,7 +201,7 @@ ColorMap = hsv(Lookup.FileCount);
 set(gcf,"Color", [0 0 0])
 nexttile(1)    
 title("Single Step Waveforms", 'Color', 'white')
-xlabel("Time [\mus]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
+xlabel("Time [ms]", 'Color', 'white'); ylabel("Voltage [mV]", 'Color', 'white');
 xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]);
 ylim([1.05*min(min(Oscope.AlignedVoltage)), 1.1*max(max(Oscope.AlignedVoltage))]);
 set(gca, 'Color', [0 0 0]); hold on;
