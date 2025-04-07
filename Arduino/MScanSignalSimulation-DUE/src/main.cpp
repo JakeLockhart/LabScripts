@@ -9,7 +9,7 @@ int Digital_Output = 7;
 int TTL_Amplitude = 0;    // Desired amplitude [mV]
 int PPAdjust = 100;         // Fine tuning range [±50mV]
 int PulseWidth = 100;       // Pulse width duration [um]
-int PulseGap = 250;         // Pulse gap duration [um]
+int PulseGap = 25;         // Pulse gap duration [um]
 int TuneRange = 1000;        // Fine-tuning range for potentiometer [±100mV]
 int Amplitude_Bits = map(TTL_Amplitude, 550, 3300, 0, 4095);    // Convert Amplitude from mV to DAC (0.5-3.3V = 0-4095)
 
