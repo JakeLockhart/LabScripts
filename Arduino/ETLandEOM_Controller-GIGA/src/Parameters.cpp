@@ -21,6 +21,7 @@ int TTLPulse_EOM = DAC0;   // Outgoing TTL pulse to Amplifier (J3 port) to contr
 int Delay = 100;
 float ReferenceVoltage = 3.3;
 int CurrentImagingPlane = TotalImagingPlanes;
+volatile bool Flag = false;
 float LaserIntensity[MAX_Planes];
 float LaserVoltage[MAX_Planes];
 float LaserVoltage_Bits[MAX_Planes];

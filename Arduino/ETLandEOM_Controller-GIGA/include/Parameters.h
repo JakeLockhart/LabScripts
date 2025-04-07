@@ -15,6 +15,7 @@ extern int TTLPulse_EOM;
 extern int Delay;
 extern float ReferenceVoltage;
 extern int CurrentImagingPlane;
+extern volatile bool Flag;
 extern float LaserIntensity[MAX_Planes];
 extern float LaserVoltage[MAX_Planes];
 extern float LaserVoltage_Bits[MAX_Planes];

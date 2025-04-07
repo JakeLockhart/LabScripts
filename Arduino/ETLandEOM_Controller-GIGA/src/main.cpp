@@ -6,44 +6,32 @@
 #include "LinearInterpolation.h"
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
-#include "InterruptHandler.h"
+#include "CreatePulses.h"
 #include "MonitorSerialOutput.h"
-
-//  This script is designed to control both the ETL and the EOM (Pockel Cell) in response to TTL pulses.
-//      Parameters:
-//          - Total imaging planes
-//          - .txt file of R2P power measurement
-//      Goal
-//          - Create Gardasoft Code in response to total imaging planes & their respective depths
-//          - Use .txt file as a reference to interpolate voltage/laser intensity at a specific imaging depth
-//          - Adjust the ETL in response to a TTL pulse
-//          - Adjust the EOM in response to a TTL pulse to match new focal depth(s)
+#include "FlagState.h"
+#include "GeneralSetup.h"
+#include "DataProcessing.h"
 
 void setup() {
-    Serial.begin(9600);
-    while (!Serial){};
-    
-    // Pin Setup 
-        pinMode(NewFrame_MScan, INPUT);
-        pinMode(TTLPulse_ETL, OUTPUT);
-        pinMode(TTLPulse_EOM, OUTPUT);
+    // Preprocess voltage and power reference tables based on user input parameters
+        DataProcessing();
 
-    // Initialization
-        analogWriteResolution(12);    
-        PowerInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserIntensity);
-        VoltageInterpolation(Wavelength, InputIntensity, TotalImagingPlanes, LaserVoltage);
-        for (int i = 0; i < TotalImagingPlanes; i++) {
-            //LaserVoltage_Bits[i] = (LaserVoltage[i] / ReferenceVoltage) * 4095;
-            LaserVoltage_Bits[i] = map(round(1000*LaserVoltage[i]),0,3300,0,4095);
-        }
-        
-    // Intitialization Serial Output
+    // Setup serial monitor, pin modes, and analog resolution
+        GeneralSetup();
+
+    // Serial output
         MonitorSerialOutput();
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
+        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, RISING);
 }
 
 void loop() {
+    if (Flag){
+        delayMicroseconds(50);
+        CreatePulses();
+        Flag = false;
+    }
 }
 

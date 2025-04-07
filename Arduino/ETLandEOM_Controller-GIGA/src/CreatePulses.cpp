@@ -2,7 +2,7 @@
 #include "Parameters.h"
 
 int i = 0;
-void InterruptHandler() {
+void CreatePulses() {
     if (CurrentImagingPlane == 1) {
         digitalWrite(TTLPulse_ETL, HIGH);
         analogWrite(TTLPulse_EOM, LaserVoltage_Bits[i]);
