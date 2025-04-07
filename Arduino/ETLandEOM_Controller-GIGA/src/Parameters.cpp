@@ -18,7 +18,8 @@ int TTLPulse_ETL = 7;   // Outgoing TTL pulse to Gardasoft, then ETL
 int TTLPulse_EOM = DAC0;   // Outgoing TTL pulse to Amplifier (J3 port) to control EOM (Pockel Cell)
 
 // Declare derivative/constant variables
-int Delay = 75;
+int PulseWidth = 32;
+int PulseGap = 27;
 float ReferenceVoltage = 3.3;
 int CurrentImagingPlane = TotalImagingPlanes;
 volatile bool Flag = false;

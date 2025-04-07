@@ -7,7 +7,7 @@ void CreatePulses() {
         digitalWrite(TTLPulse_ETL, HIGH);
         analogWrite(TTLPulse_EOM, LaserVoltage_Bits[i]);
         
-        delayMicroseconds(Delay);
+        delayMicroseconds(PulseWidth);
 
         digitalWrite(TTLPulse_ETL, LOW);
         analogWrite(TTLPulse_EOM, 0);
@@ -22,7 +22,7 @@ void CreatePulses() {
         }
     else {
         analogWrite(TTLPulse_EOM, LaserVoltage_Bits[i]);
-        delayMicroseconds(Delay);
+        delayMicroseconds(PulseWidth);
         analogWrite(TTLPulse_EOM, 0);
         CurrentImagingPlane--;
     }

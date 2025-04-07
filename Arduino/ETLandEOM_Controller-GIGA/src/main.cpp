@@ -24,12 +24,12 @@ void setup() {
 
     // Interrupt
         //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, FALLING);
 }
 
 void loop() {
     if (Flag){
-        delayMicroseconds(50);
+        delayMicroseconds(PulseGap);
         CreatePulses();
         Flag = false;
     }
