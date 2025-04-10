@@ -16,7 +16,10 @@ Lookup = FileLookup('csv');
         Oscope.HorizontalScale(i) = TempFile{12,2};
         Oscope.Yzero(i) = TempFile{14,2};
         Oscope.ProbeAtten(i) = TempFile{15,2};
-        Oscope.Time(i,:) = TempFile{:,4}/Oscope.SampleInterval(i);
+        Oscope.TimeInterval_dt(i) =  Oscope.SampleInterval(i)./Oscope.RecordLength(i);
+        Oscope.TotalTime_Tnet(i) =  Oscope.SampleInterval(i).*Oscope.RecordLength(i);
+        timeIndices = linspace(-Oscope.RecordLength(i)/2, Oscope.RecordLength(i)/2, Oscope.RecordLength(i));
+        Oscope.Time(i,:) = 1000 * timeIndices * Oscope.SampleInterval(i);
         Oscope.Voltage(i,:) = TempFile{:,5};
     end
 
@@ -57,7 +60,7 @@ Lookup = FileLookup('csv');
     figure(1);
     t1 = tiledlayout(3,1);
     title(t1, "Oscope Circuit Amplitude Validation", 'Color', 'white');
-    xlabel(t1, "Time [\mus]", 'Color', 'white'); 
+    xlabel(t1, "Time [ms]", 'Color', 'white'); 
     ylabel(t1, "Voltage [V]", 'Color', 'white');
     set(gcf, "Color", [0 0 0]);
     nexttile(1);
@@ -109,7 +112,7 @@ Lookup = FileLookup('csv');
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
     xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]); hold on;
-    xlabel("Time [\mus]");
+    xlabel("Time [ms]");
 
     nexttile(t2, 2)
     title("Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white'); hold on;
@@ -129,7 +132,7 @@ Lookup = FileLookup('csv');
     plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
     plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
-    xlabel("Time [\mus]");
+    xlabel("Time [ms]");
 
     nexttile(t2, 3)
     title("Time Lag Between Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white')
@@ -152,7 +155,7 @@ Lookup = FileLookup('csv');
     xline(Shift.Input_ETL, "--", "Color", "#D95319"); hold on;
     xline(Shift.Input_EOM, "--", "Color", "#7E2F8E"); hold on;
     xline(Shift.ETL_EOM, "--", "Color", "#77AC30"); hold on;
-    xlabel("Lag [\mus]")
+    xlabel("Lag [ms]")
 
 %% Plot Histograms
     figure(3)
@@ -181,7 +184,7 @@ Lookup = FileLookup('csv');
     nexttile(t4, 1)
     title("Analog Pulses from Arduino Due", "Color", 'white'); hold on;
     ylabel("Voltage [V]", "Color", 'white'); hold on;
-    xlabel("Time [\mus]");
+    xlabel("Time [ms]");
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); 
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
     axis tight; hold on;
