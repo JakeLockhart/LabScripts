@@ -231,12 +231,12 @@ for i = 1:Lookup.FileCount
     pause(0.1);
 end
     pause(0.5)
-    %plot(Interval, HighSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
-    %plot(Interval, LowSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
-    %pause(0.5)
-    %plot(Interval, HighSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'red'); hold on;
-    %plot(Interval, LowSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'blue'); hold on;
-    %legend("High Signal Voltage", "Low Signal Voltage", 'Color', 'white', 'Location', 'northwest')
+    plot(Interval, HighSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
+    plot(Interval, LowSignal.Voltage, 'w--', 'HandleVisibility', 'off'); hold on;
+    pause(0.5)
+    plot(Interval, HighSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'red'); hold on;
+    plot(Interval, LowSignal.Voltage, '.', 'MarkerSize', 30, 'Color', 'blue'); hold on;
+    legend("High Signal Voltage", "Low Signal Voltage", 'Color', 'white', 'Location', 'northwest')
 
 %% File Output
 Results.Data = [Interval', LowSignal.Voltage, HighSignal.Voltage];
