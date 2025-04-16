@@ -1,37 +1,40 @@
 #include <Arduino.h>
 
-// Arduino Due Board Pins
-int Potentiometer = A0;
-int Analog_Output = DAC0;
-int Digital_Output = 7;
+// Pin definitions
+const int Potentiometer = A0;
+const int Analog_Output = DAC1;
 
 // Parameters
-int TTL_Amplitude = 0;    // Desired amplitude [mV]
-int PPAdjust = 100;         // Fine tuning range [±50mV]
-int PulseWidth = 40;       // Pulse width duration [um]
-int PulseGap = 10;         // Pulse gap duration [um]
-int TuneRange = 1000;        // Fine-tuning range for potentiometer [±100mV]
-int Amplitude_Bits = map(TTL_Amplitude, 550, 3300, 0, 4095);    // Convert Amplitude from mV to DAC (0.5-3.3V = 0-4095)
+const int PulseWidth = 40;          // Pulse width in microseconds
+const int PulseGap   = 25;          // Gap between pulses
 
+const int VoltageMin = 0;           // Minimum voltage in mV (DAC lower limit)
+const int VoltageMax = 1200;        // Desired max output in mV (user-controlled)
+const float DAC_Reference = 3300.0; // Full-scale DAC voltage in mV (3.3V)
+
+// Convert voltage to 12-bit DAC value
+int voltageToDacBits(int mV) {
+  return (int)((float)mV / DAC_Reference * 4095);
+}
+int DAC_Min_Bits = voltageToDacBits(VoltageMin);
+int DAC_Max_Bits = voltageToDacBits(VoltageMax);
 
 void setup() {
-    pinMode(Analog_Output, OUTPUT);   // Setup pins
-    analogWriteResolution(12);      // Read/Write resolution is 12-bits
-    pinMode(Potentiometer, INPUT);
-    analogReadResolution(12);    
-    pinMode(Digital_Output, OUTPUT);
+  pinMode(Potentiometer, INPUT);
+  pinMode(Analog_Output, OUTPUT);
+
+  analogReadResolution(12);
+  analogWriteResolution(12);
 }
 
 void loop() {
-    int PValue = analogRead(Potentiometer);                                         // Read potentiometer analog input value
-    int TuneBits = map(PValue, 0, 4095, -TuneRange, TuneRange) * 4095 / (3300-550); // Map analog input to bit range and convert to mV range
-    int Analog_Output_Amplitude = constrain(Amplitude_Bits + TuneBits, 0, 4095);      // Create boundaries so that analog input does not exceed DAC range
+  int PValue = analogRead(Potentiometer);
 
-    analogWrite(Analog_Output, Analog_Output_Amplitude);    // Create analog pulse
-    digitalWrite(Digital_Output, HIGH);
-    delayMicroseconds(PulseWidth);
-    analogWrite(Analog_Output, 0);
-    digitalWrite(Digital_Output, LOW);
-    delayMicroseconds(PulseGap);
-    
+  int DAC_Output = map(PValue, 0, 4095, DAC_Min_Bits, DAC_Max_Bits);    // Map potentiometer to DAC range
+  DAC_Output = constrain(DAC_Output, DAC_Min_Bits, DAC_Max_Bits);       // Constrain voltage output
+
+  analogWrite(Analog_Output, DAC_Output);   // Create pulse
+  delayMicroseconds(PulseWidth);
+  analogWrite(Analog_Output, 0);
+  delayMicroseconds(PulseGap);
 }
