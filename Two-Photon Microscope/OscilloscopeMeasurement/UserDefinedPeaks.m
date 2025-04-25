@@ -44,12 +44,12 @@ function [X1, X2, canceled] = demo(x, y, numTiles, plotMode)
     % Create figure and layout
     fig = figure('Name', 'Demo', 'NumberTitle', 'off', 'Position', [100 100 800 600]);
     t = tiledlayout(numTiles, 1, 'Parent', fig, 'TileSpacing', 'compact', 'Padding', 'compact');
-    
+
     % Initialize variables
     ax = gobjects(numTiles, 1);
     xl1 = gobjects(numTiles, 1);
     xl2 = gobjects(numTiles, 1);
-    
+
     % Initial Xline values
     x1_init = min(x(1,:)) + (max(x(1,:)) - min(x(1,:))) * 0.3;
     x2_init = min(x(1,:)) + (max(x(1,:)) - min(x(1,:))) * 0.7;
@@ -76,24 +76,24 @@ function [X1, X2, canceled] = demo(x, y, numTiles, plotMode)
     % Create sliders
     sld1 = create_slider(x(1,:), x1_init, [0.1 0.05 0.35 0.05]);
     sld2 = create_slider(x(1,:), x2_init, [0.55 0.05 0.35 0.05]);
-    
+
     % Initialize slider values
     sld1.UserData.LastValue = sld1.Value;
     sld2.UserData.LastValue = sld2.Value;
-    
+
     % Add listener to sliders for real-time updates
-    addlistener(sld1, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, true));
-    addlistener(sld2, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, false));
-    
+    addlistener(sld1, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, true, numTiles));
+    addlistener(sld2, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, false, numTiles));
+
     % Create buttons
-    create_button('Get Xline Values',[0.3 0.02 0.2 0.05], @() uiresume(fig));
-    create_button('Check', [0.55 0.02 0.2 0.05], @() check_xlim(ax, xl1(1).Value, xl2(1).Value));
-    create_button('Reset', [0.8 0.02 0.2 0.05], @() reset_demo(xl1, xl2, x1_init, x2_init));
+    create_button('Get Xline Values', [0.3 0.02 0.2 0.05], @() uiresume(fig));
+    create_button('Check', [0.55 0.02 0.2 0.05], @() check_xlim(ax, xl1(1).Value, xl2(1).Value, numTiles));
+    create_button('Reset', [0.8 0.02 0.2 0.05], @() reset_demo(xl1, xl2, x1_init, x2_init, numTiles));
     create_button('Cancel', [0.05 0.02 0.2 0.05], @() cancel_demo(fig));
-    
+
     % Wait for user interaction
     uiwait(fig);
-    
+
     if isvalid(fig)
         X1 = xl1(1).Value;
         X2 = xl2(1).Value;
@@ -106,7 +106,6 @@ function [X1, X2, canceled] = demo(x, y, numTiles, plotMode)
     end
 end
 
-
 function slider = create_slider(x, init_value, position)
     slider = uicontrol('Style', 'slider', 'Min', min(x), 'Max', max(x), 'Value', init_value, ...
                        'Units', 'normalized', 'Position', position);
@@ -117,21 +116,18 @@ function create_button(label, position, callback)
               'Position', position, 'Callback', @(~, ~) callback());
 end
 
-function adaptive_xline_update(slider, xl1, xl2, isX1)
+function adaptive_xline_update(slider, xl1, xl2, isX1, numTiles)
     persistent lastUpdateTime;
-    
-    % Get current time for throttling updates
+
+    % Throttle updates
     currentTime = tic;
-    
-    % Throttle the update rate by checking the time difference (e.g., 0.1 seconds)
     if isempty(lastUpdateTime) || toc(lastUpdateTime) > 0.1
-        % Proceed with slider value update
         newValue = slider.Value;
         lastValue = slider.UserData.LastValue;
-        speed = abs(newValue - lastValue);
-        fine_step = 0.001 * (xl2(1).Value - xl1(1).Value);
-        coarse_step = 0.02 * (xl2(1).Value - xl1(1).Value);
-        step_size = ifelse(speed < 0.005 * (xl2(1).Value - xl1(1).Value), fine_step, coarse_step);
+        range = xl2(1).Value - xl1(1).Value;
+        fine_step = 0.001 * range;
+        coarse_step = 0.02 * range;
+        step_size = ifelse(abs(newValue - lastValue) < 0.005 * range, fine_step, coarse_step);
         newValue = round(newValue / step_size) * step_size;
 
         if isX1
@@ -140,7 +136,7 @@ function adaptive_xline_update(slider, xl1, xl2, isX1)
                 flash_xline(xl1(1));
                 warning('Xline 1 cannot exceed Xline 2. Keeping at limit.');
             end
-            for i = 1:3
+            for i = 1:numTiles
                 xl1(i).Value = newValue;
             end
         else
@@ -149,35 +145,32 @@ function adaptive_xline_update(slider, xl1, xl2, isX1)
                 flash_xline(xl2(1));
                 warning('Xline 2 cannot be lower than Xline 1. Keeping at limit.');
             end
-            for i = 1:3
+            for i = 1:numTiles
                 xl2(i).Value = newValue;
             end
         end
 
         slider.UserData.LastValue = newValue;
         slider.Value = newValue;
-        
-        % Update the time of last update to throttle the function
         lastUpdateTime = currentTime;
     end
 end
 
-function check_xlim(ax, X1, X2)
-    for i = 1:3
+function check_xlim(ax, X1, X2, numTiles)
+    for i = 1:numTiles
         ax(i).XLim = [0.9 * X1, 1.1 * X2];
+    end
+end
+
+function reset_demo(xl1, xl2, x1_init, x2_init, numTiles)
+    for i = 1:numTiles
+        xl1(i).Value = x1_init;
+        xl2(i).Value = x2_init;
     end
 end
 
 function cancel_demo(fig)
     close(fig);
-end
-
-function reset_demo(xl1, xl2, x1_init, x2_init)
-    % Reset Xline positions to initial values
-    for i = 1:3
-        xl1(i).Value = x1_init;
-        xl2(i).Value = x2_init;
-    end
 end
 
 function flash_xline(xl)
