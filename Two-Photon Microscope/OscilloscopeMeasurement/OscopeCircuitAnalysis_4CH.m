@@ -2,7 +2,7 @@ clear; clc; format short g; format compact;
 
 addpath('C:\Workspace\LabScripts\Functions')
 Lookup = FileLookup('csv');
-[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, 3, 'single', 'UseRaw');
+[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, Lookup.FileCount, 'single', 'UseRaw');
 
 %% Read .CSV file
     for i = 1:Lookup.FileCount
@@ -24,23 +24,29 @@ Lookup = FileLookup('csv');
     end
 
 %% Cross Correlation
-    NormalizedBounded_Input = Oscope.Voltage(1, LowerBound:UpperBound) - mean(Oscope.Voltage(1, LowerBound:UpperBound));
-    NormalizedBounded_ETL = Oscope.Voltage(2, LowerBound:UpperBound) - mean(Oscope.Voltage(2, LowerBound:UpperBound));
-    NormalizedBounded_EOM = Oscope.Voltage(3, LowerBound:UpperBound) - mean(Oscope.Voltage(3, LowerBound:UpperBound));
+    NormalizedBounded_MScan = Oscope.Voltage(1, LowerBound:UpperBound) - mean(Oscope.Voltage(1, LowerBound:UpperBound));
+    NormalizedBounded_Comparator = Oscope.Voltage(2, LowerBound:UpperBound) - mean(Oscope.Voltage(2, LowerBound:UpperBound));
+    NormalizedBounded_ETL = Oscope.Voltage(3, LowerBound:UpperBound) - mean(Oscope.Voltage(3, LowerBound:UpperBound));
+    NormalizedBounded_EOM = Oscope.Voltage(4, LowerBound:UpperBound) - mean(Oscope.Voltage(4, LowerBound:UpperBound));
 
-    [Xc.Input_ETL, Lags.Input_ETL] = xcorr(NormalizedBounded_Input, NormalizedBounded_ETL, "coeff");
-    [Xc.Input_EOM, Lags.Input_EOM] = xcorr(NormalizedBounded_Input, NormalizedBounded_EOM, "coeff");
+    [Xc.Input_Comp, Lags.Input_Comp] = xcorr(NormalizedBounded_MScan, NormalizedBounded_Comparator, "coeff");
+    [Xc.Input_ETL, Lags.Input_ETL] = xcorr(NormalizedBounded_MScan, NormalizedBounded_ETL, "coeff");
+    [Xc.Input_EOM, Lags.Input_EOM] = xcorr(NormalizedBounded_MScan, NormalizedBounded_EOM, "coeff");
     [Xc.ETL_EOM, Lags.ETL_EOM] = xcorr(NormalizedBounded_ETL, NormalizedBounded_EOM, "coeff");
+
+    [~, Index.Input_Comp] = max(Xc.Input_Comp);
     [~, Index.Input_ETL] = max(Xc.Input_ETL);
     [~, Index.Input_EOM] = max(Xc.Input_EOM);
     [~, Index.ETL_EOM] = max(Xc.ETL_EOM);
+
+    Shift.Input_Comp = Lags.Input_ETL(Index.Input_Comp); 
     Shift.Input_ETL = Lags.Input_ETL(Index.Input_ETL);
     Shift.Input_EOM = Lags.Input_EOM(Index.Input_EOM);
     Shift.ETL_EOM = Lags.ETL_EOM(Index.ETL_EOM);
 
 %% Histogram
-    TotalBins = sqrt(size(Oscope.Voltage(3,:),2));
-    [Count, BinEdge] = histcounts(Oscope.Voltage(3,:), TotalBins);
+    TotalBins = sqrt(size(Oscope.Voltage(4,:),2));
+    [Count, BinEdge] = histcounts(Oscope.Voltage(4,:), TotalBins);
     BinCenter = (BinEdge(1:end-1) + BinEdge(2:end))/ 2;
 
     Count(Count == 1) = 0;
@@ -58,7 +64,7 @@ Lookup = FileLookup('csv');
     ColorMap = hsv(Lookup.FileCount);
 
     figure(1);
-    t1 = tiledlayout(3,1);
+    t1 = tiledlayout(Lookup.FileCount,1);
     title(t1, "Oscope Circuit Amplitude Validation", 'Color', 'white');
     xlabel(t1, "Time [ms]", 'Color', 'white'); 
     ylabel(t1, "Voltage [V]", 'Color', 'white');
@@ -78,10 +84,10 @@ Lookup = FileLookup('csv');
 
 %% Plot Time Lag Between Signals
     figure(2)
-    t2 = tiledlayout(4,3);
+    t2 = tiledlayout(Lookup.FileCount + 1,3);
     title(t2, "Time Lag Between Signals", 'Color', 'white');
     set(gcf, "Color", [0 0 0]);
-    for i = 1:12
+    for i = 1:(Lookup.FileCount+1)*3
         nexttile(t2, i); 
         set(gca, 'Color', [0 0 0]);  
         set(gca, 'XColor', 'white', 'YColor', 'white');
@@ -90,71 +96,88 @@ Lookup = FileLookup('csv');
     end
 
     nexttile(t2, 1)
-    title("Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white'); hold on;
+    title("MScan Input Signal & Comparator Signal", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,:), Oscope.Voltage(1,:), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(2,:), Oscope.Voltage(2,:), "Color", ColorMap(2,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
     nexttile(t2, 4)
-    title("Simulated Input Signal & Analog Pulse to EOM", 'Color', 'white'); hold on;
+    title("MScan Input Signal & TTL Pulse to ETL", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,:), Oscope.Voltage(1,:), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
     ylabel("Voltage [V]")
     nexttile(t2, 7)
-    title("TTL Pulse to ETL and Analog Pulse to EOM", 'Color', 'white'); hold on;
-    plot(Oscope.Time(2,:), Oscope.Voltage(2,:), "Color", ColorMap(2,:)); hold on;
-    plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
+    title("MScan Input Signal & Analog Pulse to EOM", 'Color', 'white'); hold on;
+    plot(Oscope.Time(1,:), Oscope.Voltage(1,:), "Color", ColorMap(1,:)); hold on;
+    plot(Oscope.Time(4,:), Oscope.Voltage(4,:), "Color", ColorMap(4,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
     nexttile(t2, 10)
-    title("Input Signal Overlayed with Output Signals", 'Color', 'white'); hold on;
+    title("TTL Pulse to ETL and Analog Pulse to EOM", 'Color', 'white'); hold on;
+    plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(4,:), Oscope.Voltage(4,:), "Color", ColorMap(4,:)); hold on;
+    xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
+    nexttile(t2, 13)
+    title("MScan Input Signal Overlayed with Output Signals", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,:), Oscope.Voltage(1,:), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(2,:), Oscope.Voltage(2,:), "Color", ColorMap(2,:)); hold on;
     plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(4,:), Oscope.Voltage(4,:), "Color", ColorMap(4,:)); hold on;
     xline(Oscope.Time(1,LowerBound), "--", "Color", 'white'); xline(Oscope.Time(1,UpperBound), "--", "Color", 'white'); hold on;
     xlim([Oscope.Time(1,LowerBound), Oscope.Time(1,UpperBound)]); hold on;
     xlabel("Time [ms]");
 
     nexttile(t2, 2)
-    title("Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white'); hold on;
+    title("MScan & Comparator", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
     nexttile(t2, 5)
-    title("Simulated Input Signal & Analog Pulse to EOM", 'Color', 'white'); hold on;
+    title("MScan & ETL", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
     ylabel("Voltage [V]")
     nexttile(t2, 8)
-    title("TTL Pulse to ETL and Analog Pulse to EOM", 'Color', 'white'); hold on;
-    plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
-    plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
+    title("MScan & EOM", 'Color', 'white'); hold on;
+    plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
+    plot(Oscope.Time(4,LowerBound:UpperBound), Oscope.Voltage(4,LowerBound:UpperBound), "Color", ColorMap(4,:)); hold on;
     nexttile(t2, 11)
-    title("Input Signal Overlayed with Output Signals", 'Color', 'white'); hold on;
+    title("ETL & EOM", 'Color', 'white'); hold on;
+    plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(4,LowerBound:UpperBound), Oscope.Voltage(4,LowerBound:UpperBound), "Color", ColorMap(4,:)); hold on;
+    nexttile(t2, 14)
+    title("All Signals", 'Color', 'white'); hold on;
     plot(Oscope.Time(1,LowerBound:UpperBound), Oscope.Voltage(1,LowerBound:UpperBound), "Color", ColorMap(1,:)); hold on;
     plot(Oscope.Time(2,LowerBound:UpperBound), Oscope.Voltage(2,LowerBound:UpperBound), "Color", ColorMap(2,:)); hold on;
     plot(Oscope.Time(3,LowerBound:UpperBound), Oscope.Voltage(3,LowerBound:UpperBound), "Color", ColorMap(3,:)); hold on;
+    plot(Oscope.Time(4,LowerBound:UpperBound), Oscope.Voltage(4,LowerBound:UpperBound), "Color", ColorMap(4,:)); hold on;
     xlabel("Time [ms]");
 
     nexttile(t2, 3)
-    title("Time Lag Between Simulated Input Signal & TTL Pulse to ETL", 'Color', 'white')
-    plot(Lags.Input_ETL, Xc.Input_ETL, "Color", "#D95319"); hold on;
-    xline(Shift.Input_ETL, "--", "Color", "#D95319"); hold on;
+    title("Time Lag Between MScan & Comparator", 'Color', 'white')
+    plot(Lags.Input_Comp, Xc.Input_Comp, "Color", (ColorMap(1,:)+ColorMap(2,:))/2); hold on;
+    xline(Shift.Input_Comp, "--", "Color", (ColorMap(1,:)+ColorMap(2,:))/2); hold on;
     nexttile(t2, 6)
-    title("Time Lag Between Simulated Input Signal & Analog Pulse to EOM", 'Color', 'white')
-    plot(Lags.Input_EOM, Xc.Input_EOM, "Color", "#7E2F8E"); hold on;
-    xline(Shift.Input_EOM, "--", "Color", "#7E2F8E"); hold on;
-    ylabel("Correlation Coefficient", 'Color', 'white')
+    title("Time Lag Between MScan & ETL", 'Color', 'white')
+    plot(Lags.Input_ETL, Xc.Input_ETL, "Color", (ColorMap(1,:)+ColorMap(3,:))/2); hold on;
+    xline(Shift.Input_ETL, "--", "Color", (ColorMap(1,:)+ColorMap(3,:))/2); hold on;
     nexttile(t2, 9)
-    title("Time Lag Between TTL Pulse to ETL & Analog Pulse to EOM", 'Color', 'white')
-    plot(Lags.ETL_EOM, Xc.ETL_EOM, "Color", "#77AC30"); hold on;
-    xline(Shift.ETL_EOM, "--", "Color", "#77AC30"); hold on;
+    title("Time Lag Between MScan & EOM", 'Color', 'white')
+    plot(Lags.Input_EOM, Xc.Input_EOM, "Color", (ColorMap(1,:)+ColorMap(4,:))/2); hold on;
+    xline(Shift.Input_EOM, "--", "Color", (ColorMap(1,:)+ColorMap(4,:))/2); hold on;
+    ylabel("Correlation Coefficient", 'Color', 'white')
     nexttile(t2, 12)
+    title("Time Lag Between ETL & EOM", 'Color', 'white')
+    plot(Lags.ETL_EOM, Xc.ETL_EOM, "Color", (ColorMap(3,:)+ColorMap(2,:))/2); hold on;
+    xline(Shift.ETL_EOM, "--", "Color", (ColorMap(3,:)+ColorMap(2,:))/2); hold on;
+    nexttile(t2, 15)
     title("Overlayed Time Lag Between Signals", 'Color', 'white')
-    plot(Lags.Input_ETL, Xc.Input_ETL, "Color", "#D95319"); hold on;
-    plot(Lags.Input_EOM, Xc.Input_EOM, "Color", "#7E2F8E"); hold on;
-    plot(Lags.ETL_EOM, Xc.ETL_EOM, "Color", "#77AC30"); hold on;
-    xline(Shift.Input_ETL, "--", "Color", "#D95319"); hold on;
-    xline(Shift.Input_EOM, "--", "Color", "#7E2F8E"); hold on;
-    xline(Shift.ETL_EOM, "--", "Color", "#77AC30"); hold on;
+    plot(Lags.Input_Comp, Xc.Input_Comp, "Color", (ColorMap(1,:)+ColorMap(2,:))/2); hold on;
+    plot(Lags.Input_ETL, Xc.Input_ETL, "Color", (ColorMap(1,:)+ColorMap(3,:))/2); hold on;
+    plot(Lags.Input_EOM, Xc.Input_EOM, "Color", (ColorMap(1,:)+ColorMap(4,:))/2); hold on;
+    plot(Lags.ETL_EOM, Xc.ETL_EOM, "Color", (ColorMap(3,:)+ColorMap(4,:))/2); hold on;
+    xline(Shift.Input_Comp, "--", "Color", (ColorMap(1,:)+ColorMap(2,:))/2); hold on;
+    xline(Shift.Input_ETL, "--", "Color", (ColorMap(1,:)+ColorMap(3,:))/2); hold on;
+    xline(Shift.Input_EOM, "--", "Color", (ColorMap(1,:)+ColorMap(4,:))/2); hold on;
+    xline(Shift.ETL_EOM, "--", "Color", (ColorMap(3,:)+ColorMap(4,:))/2); hold on;
     xlabel("Lag [ms]")
 
 %% Plot Histograms
@@ -171,8 +194,8 @@ Lookup = FileLookup('csv');
     set(gca, 'XColor', 'w', 'YColor', 'w'); 
     grid on;
     set(gca, 'GridColor', 'w'); 
-    xlim([0, max(Oscope.Voltage(3,:))*1.1]);
-    ylim([0,mean(Counts.Actual(2:end))*5]);
+    xlim([0, max(Oscope.Voltage(4,:))*1.1]);
+    ylim([0,mean(Counts.Actual(3:end))*5]);
     for i = 1:size(Peaks.Actual,2)
         xlines(i) = xline(Peaks.Actual(i), '--', "Color", 'white', 'label', num2str(Peaks.Actual(i)) + " V");
     end
@@ -185,10 +208,10 @@ Lookup = FileLookup('csv');
     title("Analog Pulses from Arduino Due", "Color", 'white'); hold on;
     ylabel("Voltage [V]", "Color", 'white'); hold on;
     xlabel("Time [ms]");
-    plot(Oscope.Time(3,:), Oscope.Voltage(3,:), "Color", ColorMap(3,:)); 
+    plot(Oscope.Time(4,:), Oscope.Voltage(4,:), "Color", ColorMap(4,:)); 
     set(gca, 'Color', [0 0 0]);  set(gca, 'XColor', 'white', 'YColor', 'white');
     axis tight; hold on;
-    ylim([0, max(Oscope.Voltage(3,:))*1.1])
+    ylim([0, max(Oscope.Voltage(4,:))*1.1])
     for i = 1:size(Peaks.Actual, 2)
         ylines(i) = yline(Peaks.Actual(i), '--', "Color", 'white', 'Label', [num2str(Peaks.Actual(i)) + " V"]);
     end
