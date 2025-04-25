@@ -11,8 +11,15 @@ This script was a sanity check to confirm that multiple oscilloscope readings fo
 - **Inputs**: A single folder of the .txt files containing the Low Voltage and High Voltage.
 - **Outputs**: Graphs depicting the linear relationship between voltage and laser input intensity.
 
-## OscopeCircuitAnalysis.m
-This script is designed to validate the values that the Arduino Due is outputing in response to a simulated MScan input signal. The Arduino circuit has three associated siganls that are active: Input TTL pulse from MScan software (0-5V), Output TTL pulse from Arduino Due to ETL (0-3.3V), Output analog pulse from Arduino Due to EOM (0-1.5V). The oscilloscpe can record each of these waveforms simultaneously and create a file continain a single .CSV file for each waveform and a snapshot of the oscilloscope's display. This script analyzes each of these files to determine the 'Time Lag' between signals and the magnitude of the steps for the analog pulse.
+## OscopeCircuitAnalysis_3CH.m
+This script is designed to validate the values that the Arduino Due is outputing in response to a simulated MScan input signal. The Arduino circuit has three associated signals that are active: Input TTL pulse from simulated MScan software (0-5V), Output TTL pulse from Arduino Due to ETL (0-3.3V), Output analog pulse from Arduino Due to EOM (0-1.5V). The oscilloscpe can record each of these waveforms simultaneously and create a file continain a single .CSV file for each waveform and a snapshot of the oscilloscope's display. This script analyzes each of these files to determine the 'Time Lag' between signals and the magnitude of the steps for the analog pulse.
+This script is specifically designed for three .CSV inputs {Input Signal, ETL Signal, EOM Signal}.
+- **Inputs**: A single folder produced from the oscilloscope's 'Save All' function. When three waveforms are active.
+- **Outputs**: Graphs depicting the raw signals, overlayed waveforms with an associated cross-correlation, graph of analog pulse with step heights identified. 
+
+## OscopeCircuitAnalysis_4CH.m
+This script is similar to 'OscopeCircuitAnalysis_3CH.m' but is designed to work for the circuit after being integrated with MScan rather than having simulated input signals. The Arduino circuit has four associated signals: Input analog pulse from MScan software (0-1.2V), thresholed analog signal via comparator (0 or 3.3V based on thresholed), Output TTL pulse from Arduino Giga to ETL (0-3.3V), Output analog pulse from Arduino Giga to EOM (0-1.5V). The oscilloscope records these four waveforms simultaneously to create a folder with a single .CSV for each waveform snapshot. This script determines the 'Time Lag' between signals and the magnitude of the steps for the analog pulse.
+This script is specifically designed for four .CSV inputs {Input Signal, Comparator Modulated Signal, ETL Signal, EOM Signal}.
 - **Inputs**: A single folder produced from the oscilloscope's 'Save All' function. When three waveforms are active.
 - **Outputs**: Graphs depicting the raw signals, overlayed waveforms with an associated cross-correlation, graph of analog pulse with step heights identified. 
 
