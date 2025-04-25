@@ -23,13 +23,12 @@ void setup() {
         MonitorSerialOutput();
 
     // Interrupt
-        //attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), InterruptHandler, RISING);
         attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, FALLING);
 }
 
 void loop() {
     if (Flag){
-        delayMicroseconds(PulseGap);
+        //delayMicroseconds(PulseGap);
         CreatePulses();
         Flag = false;
     }

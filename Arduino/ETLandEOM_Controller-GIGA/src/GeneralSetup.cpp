@@ -4,7 +4,7 @@
 
 void GeneralSetup(){
     Serial.begin(9600);
-        while (!Serial){};
+    //    while (!Serial){};
         
     pinMode(NewFrame_MScan, INPUT);
     pinMode(TTLPulse_ETL, OUTPUT);
