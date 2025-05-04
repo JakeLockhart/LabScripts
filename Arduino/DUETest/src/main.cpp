@@ -8,7 +8,6 @@ void FlagState() {
 
 void CreatePulse() {
   Counter++;
-  Serial.print(Counter);
   Flag = false;
 }
 
@@ -20,10 +19,13 @@ void setup() {
   analogWriteResolution(12);
   
   attachInterrupt(digitalPinToInterrupt(2), FlagState, RISING);
+  Flag = false;
 }
 
 void loop() {
   if (Flag) {
     CreatePulse();
   }
+  Flag = false;
+  Serial.println(Counter);
 }

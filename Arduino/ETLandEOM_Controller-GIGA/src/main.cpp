@@ -23,7 +23,7 @@ void setup() {
         MonitorSerialOutput();
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, FALLING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, RISING);
 }
 
 void loop() {
