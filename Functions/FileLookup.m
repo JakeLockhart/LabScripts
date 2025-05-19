@@ -29,5 +29,6 @@ function Lookup = FileLookup(FileType, SearchMode)
         Lookup.AllFiles = searchPattern;                                            % Create general file path
         Lookup.FolderInfo = dir(searchPattern);                                     % Identify the folder directory
         Lookup.FileCount = length(Lookup.FolderInfo);                               % Determine the number of files in this folder
+        Lookup.FolderCount = length(unique({Lookup.FolderInfo.folder}));            % Determine the number of folders 
         [~, Lookup.CurrentFolder] = fileparts(Lookup.FolderAddress);                % Collect folder information
 end

@@ -1,7 +1,7 @@
 function Oscope = ReadOscope(Lookup)
     for i = 1:Lookup.FileCount
         Name = erase(Lookup.FolderInfo(i).name, ".csv");
-        TempFile = readtable(fullfile(Lookup.FolderAddress, Name));
+        TempFile = readtable(fullfile(Lookup.FolderInfo(i).folder, Name));
         Oscope.RecordLength(i) = TempFile{1,2};
         Oscope.SampleInterval(i) = TempFile{2,2};
         Oscope.TriggerPoint(i) = TempFile{3,2};
