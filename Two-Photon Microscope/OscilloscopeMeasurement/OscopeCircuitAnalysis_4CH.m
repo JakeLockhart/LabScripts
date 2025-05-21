@@ -52,10 +52,12 @@ Oscope = ReadOscope(Lookup);
     ylabel(t1, "Voltage [V]", 'Color', 'white');
     set(gcf, "Color", [0 0 0]);
     nexttile(1);
-    title("Simulated MScan Input Signals", 'Color', 'white'); hold on;
+    title("MScan Input Signals (AO0)", 'Color', 'white'); hold on;
     nexttile(2);
-    title("TTL Pulses Output to ETL", 'Color', 'white'); hold on;
+    title("Comparator Signals", 'Color', 'white'); hold on;
     nexttile(3);
+    title("TTL Pulses Output to ETL", 'Color', 'white'); hold on;
+    nexttile(4);
     title("Analog Pulses Output to Amplifier (302RM)", 'Color', 'white'); hold on;
     for i = 1:Lookup.FileCount
         nexttile(t1, i);
