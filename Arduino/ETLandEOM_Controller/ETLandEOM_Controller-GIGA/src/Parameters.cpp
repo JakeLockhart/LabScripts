@@ -13,7 +13,8 @@ int InputIntensity[MAX_Planes] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100}; // T
 
 //---------------------- Do Not Edit --------------------------------------------------------------
 // Arduino Board Pins (TTL Input/Output)
-int NewFrame_MScan = 2;     // Income TTL pulse from MScan that occurs at every new frame
+int NewLine_MScan = 2;      // Income TTL pulse from MScan that occurs at every new line
+int NewFrame_MScan = 3;     // Income TTL pulse from MScan that occurs at every new frame
 int TTLPulse_ETL = 7;       // Outgoing TTL pulse to Gardasoft, then ETL 
 int TTLPulse_EOM = DAC0;    // Outgoing TTL pulse to Amplifier (J3 port) to control EOM (Pockel Cell)
 
@@ -21,6 +22,7 @@ int TTLPulse_EOM = DAC0;    // Outgoing TTL pulse to Amplifier (J3 port) to cont
 int PulseWidth = 37;
 int PulseGap = 0;
 float ReferenceVoltage = 3.3;
+int VoltageStepIndex = 0;
 int CurrentImagingPlane = TotalImagingPlanes;
 volatile bool Flag = false;
 float LaserIntensity[MAX_Planes];

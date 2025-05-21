@@ -8,6 +8,7 @@ extern int TotalImagingPlanes;
 extern int ImagingPlaneDepths[MAX_Planes];
 extern int InputIntensity[MAX_Planes];
 
+extern int NewLine_MScan;
 extern int NewFrame_MScan;
 extern int TTLPulse_ETL;
 extern int TTLPulse_EOM;
@@ -15,6 +16,7 @@ extern int TTLPulse_EOM;
 extern int PulseWidth;
 extern int PulseGap;
 extern float ReferenceVoltage;
+extern int VoltageStepIndex;
 extern int CurrentImagingPlane;
 extern volatile bool Flag;
 extern float LaserIntensity[MAX_Planes];

@@ -11,6 +11,7 @@
 #include "FlagState.h"
 #include "GeneralSetup.h"
 #include "DataProcessing.h"
+#include "VoltageStep.h"
 
 void setup() {
     // Preprocess voltage and power reference tables based on user input parameters
@@ -23,12 +24,12 @@ void setup() {
         MonitorSerialOutput();
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FlagState, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), VoltageStep, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewLine_MScan), FlagState,RISING);
 }
 
 void loop() {
     if (Flag){
-        //delayMicroseconds(PulseGap);
         CreatePulses();
         Flag = false;
     }
