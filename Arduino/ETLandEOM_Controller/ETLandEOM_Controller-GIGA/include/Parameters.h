@@ -18,6 +18,7 @@ extern int PulseGap;
 extern float ReferenceVoltage;
 extern int VoltageStepIndex;
 extern int CurrentImagingPlane;
+extern volatile int FrameCounter;
 extern volatile bool EOMFlag;
 extern volatile bool ETLFlag;
 extern float LaserIntensity[MAX_Planes];

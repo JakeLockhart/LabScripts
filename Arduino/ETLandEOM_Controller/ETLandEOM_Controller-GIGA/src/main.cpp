@@ -13,6 +13,9 @@
 #include "GeneralSetup.h"
 #include "DataProcessing.h"
 #include "VoltageStep.h"
+#include "FrameTriggerInterrupt.h"
+#include "LineTriggerInterrupt.h"
+
 
 void setup() {
     // Preprocess voltage and power reference tables based on user input parameters
@@ -25,8 +28,8 @@ void setup() {
         MonitorSerialOutput();
 
     // Interrupt
-        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), VoltageStep, RISING);
-        attachInterrupt(digitalPinToInterrupt(NewLine_MScan), EOMFlagState, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), FrameTriggerInterrupt, RISING);
+        attachInterrupt(digitalPinToInterrupt(NewLine_MScan), LineTriggerInterrupt, RISING);
 }
 
 void loop() {

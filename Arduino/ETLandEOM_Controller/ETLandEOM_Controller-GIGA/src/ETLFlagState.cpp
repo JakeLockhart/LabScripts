@@ -2,5 +2,9 @@
 #include "ETLFlagState.h"
 
 void ETLFlagState(){
-    ETLFlag = true;
+    FrameCounter++;
+    if(FrameCounter == TotalImagingPlanes) {
+        ETLFlag = true;
+        FrameCounter = 0;
+    }
 }
