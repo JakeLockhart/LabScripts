@@ -2,7 +2,7 @@
 #include "Parameters.h"
 #include "VoltageStep.h"
 
-void CreatePulses() {
+void CreateEOMPulse() {
     if (CurrentImagingPlane == 1) {
         digitalWrite(TTLPulse_ETL, HIGH);
         analogWrite(TTLPulse_EOM, LaserVoltage_Bits[VoltageStepIndex]);

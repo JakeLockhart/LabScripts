@@ -6,9 +6,10 @@
 #include "LinearInterpolation.h"
 #include "PowerResults.h"
 #include "OscilloscopeVoltage.h"
-#include "CreatePulses.h"
+#include "CreateEOMPulse.h"
+#include "CreateETLPulse.h"
 #include "MonitorSerialOutput.h"
-#include "FlagState.h"
+#include "EOMFlagState.h"
 #include "GeneralSetup.h"
 #include "DataProcessing.h"
 #include "VoltageStep.h"
@@ -25,13 +26,18 @@ void setup() {
 
     // Interrupt
         attachInterrupt(digitalPinToInterrupt(NewFrame_MScan), VoltageStep, RISING);
-        attachInterrupt(digitalPinToInterrupt(NewLine_MScan), FlagState,RISING);
+        attachInterrupt(digitalPinToInterrupt(NewLine_MScan), EOMFlagState, RISING);
 }
 
 void loop() {
-    if (Flag){
-        CreatePulses();
-        Flag = false;
+    if (EOMFlag || ETLFlag){
+        if (EOMFlag){
+            CreateEOMPulse();
+            EOMFlag = false;
+        }
+        if (ETLFlag){
+            CreateETLPulse();
+            ETLFlag = false;
+        }
     }
 }
-
