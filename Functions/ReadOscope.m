@@ -4,6 +4,7 @@ function Oscope = ReadOscope(Lookup)
         TempFile = readtable(fullfile(Lookup.FolderInfo(i).folder, Name));
         Oscope.RecordLength(i) = TempFile{1,2};
         Oscope.SampleInterval(i) = TempFile{2,2};
+        Oscope.SampleFrequency(i) = 1/Oscope.SampleInterval(i);
         Oscope.TriggerPoint(i) = TempFile{3,2};
         Oscope.VerticalScale(i) = TempFile{9,2};
         Oscope.VerticalOffset(i) = TempFile{10,2};
