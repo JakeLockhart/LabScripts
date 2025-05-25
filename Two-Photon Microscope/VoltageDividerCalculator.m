@@ -2,7 +2,10 @@ clear; clc;
 format short g; format compact;
 
 AllVoltages = [];
-R = [1000, 2000, 10000, 100, 10e6, 100000, 10, 5000, 330, 220];
+R = [1000, 2000, 10000, 100, 10e6, 100000, 10, 5000, 330, 220. 20000, ...
+     27000, 33000, 47000, 56000, 68000, 3000, 4700, 5600, 8200, 10000, ...
+     15000, 20, 1200, 1500, 1800, 2000, 47, 10, 49.9, 75, 100, 150, 500, ...
+     100000, 499000, 250000, 1000, 195, 75000, 200000, 500];
 Vin = [3.3, 5];
 
 for i = 1:length(Vin)
@@ -16,8 +19,8 @@ for i = 1:length(Vin)
     end
 end
 
-MinVoltage = 0.6;
-MaxVoltage = 3;
+MinVoltage = 0.475;
+MaxVoltage = 0.575;
 
 MinFiltered = AllVoltages(AllVoltages(:,1) > MinVoltage, :);
 MaxFiltered = MinFiltered(MinFiltered(:,1) < MaxVoltage, :);
