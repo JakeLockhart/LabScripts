@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 // Pin Definitions
-const int FrameOutPin = 2;
-const int LineOutPin = 3;
+const int LineOutPin = 2;
+const int FrameOutPin = 3;
 
 void setup() {
   pinMode(FrameOutPin, OUTPUT);
