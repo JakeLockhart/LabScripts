@@ -126,8 +126,8 @@ for i = 1:Lookup.FileCount
     P2 = abs(Y/Oscope.RecordLength(i));
     P1 = P2(1:floor(Oscope.RecordLength(i)/2)+1);
     P1(2:end-1) = 2*P1(2:end-1);
-    f = Oscope.SampleFrequency(i)*(0:floor(Oscope.RecordLength(i)/2))/Oscope.RecordLength(i);
-    plot(f,P1);
+    FrequencyVector = Oscope.SampleFrequency(i)*(0:floor(Oscope.RecordLength(i)/2))/Oscope.RecordLength(i);
+    plot(FrequencyVector, P1);
     xlabel('Frequency (Hz)');
     ylabel('Amplitude');
     title("FFT of Signal " + i)
