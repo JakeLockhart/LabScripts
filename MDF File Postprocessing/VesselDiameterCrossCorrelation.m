@@ -42,6 +42,8 @@ Data.Top.Time = length(Data.Top.RawArea.area)/39.55;
 Data.Top.Area = Data.Top.RawArea.area;
 Data.Top.Diameter = 2*sqrt(Data.Top.Area/pi);
 Data.Top.FilteredDiameter = medfilt1(Data.Top.Diameter,Parameter.FilterSize);
+[B, A] = butter(4, 1/(Parameter.FPS/2), 'low');
+Data.Top.FilteredDiameter = filtfilt(B, A, Data.Top.FilteredDiameter);
 Data.Top.Normalized = 100*(Data.Top.FilteredDiameter - mean(Data.Top.FilteredDiameter))/mean(Data.Top.FilteredDiameter);
 
 Data.Bottom.RawArea = readtable("JSL000_Practice6_241204_Processing_Bottom_Area.txt");
@@ -49,6 +51,8 @@ Data.Bottom.Time = length(Data.Bottom.RawArea.area)/39.55;
 Data.Bottom.Area = Data.Bottom.RawArea.area;
 Data.Bottom.Diameter = 2*sqrt(Data.Bottom.Area/pi);
 Data.Bottom.FilteredDiameter = medfilt1(Data.Bottom.Diameter,Parameter.FilterSize);
+[B, A] = butter(4, 1/(Parameter.FPS/2), 'low');
+Data.Bottom.FilteredDiameter = filtfilt(B, A, Data.Bottom.FilteredDiameter);
 Data.Bottom.Normalized = 100*(Data.Bottom.FilteredDiameter - mean(Data.Bottom.FilteredDiameter))/mean(Data.Bottom.FilteredDiameter);
 
 %% Data - ROI & Correlations
