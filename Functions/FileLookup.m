@@ -9,7 +9,7 @@ function Lookup = FileLookup(FileType, SearchMode, ConstantAdress)
     
     %% Select the folder
         if strcmpi(SearchMode, 'TroubleShoot')                                      % SearchMode = Constant filepath for testing
-            if ~isfolder(ConstantAdress)                              %   Determine if three fields are provided  
+            if ~isfolder(ConstantAdress)                                            %   Determine if three fields are provided  
                 error("For 'TroubleShoot' mode, you must provide a" + ...           %       Throw error message if filepath not defined
                       " valid folder path as the third argument.");                 %   
             end                                                                     %   Continue
