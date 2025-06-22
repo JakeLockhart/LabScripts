@@ -19,8 +19,8 @@ for i = 1:length(Vin)
     end
 end
 
-MinVoltage = 0.475;
-MaxVoltage = 0.575;
+MinVoltage = 2.5;
+MaxVoltage = 3.5;
 
 MinFiltered = AllVoltages(AllVoltages(:,1) > MinVoltage, :);
 MaxFiltered = MinFiltered(MinFiltered(:,1) < MaxVoltage, :);
