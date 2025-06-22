@@ -1,4 +1,7 @@
 function Oscope = ReadOscope(Lookup)
+    arguments
+        Lookup struct
+    end
     for i = 1:Lookup.FileCount
         Name = erase(Lookup.FolderInfo(i).name, ".csv");
         TempFile = readtable(fullfile(Lookup.FolderInfo(i).folder, Name));

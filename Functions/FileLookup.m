@@ -1,20 +1,15 @@
 function Lookup = FileLookup(FileType, SearchMode, ConstantAdress)
-    %% Validate file type 
-        if ~ischar(FileType) && ~isstring(FileType)                                 % Ensure input is a string ('csv', 'txt', etc)
-            error('File type must be a string or character array.');                %   Throw error message otherwise
-        end                                                                         %   Continue
+    arguments
+        FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tiff', 'mdf'})};
+        SearchMode char {mustBeMember(SearchMode, {'Single', 'All', 'TroubleShoot'})} = 'Single';
+        ConstantAdress char = ''
+    end
+    %% Define the file structure
         Lookup.FileType = strcat('*.', FileType);                                   % Choose file type
     
-    %% Determine search mode (Single Folder || All Subfolders || Constant TroubleShoot)
-        if nargin < 2 || isempty(SearchMode)                                        % Assume no subfolders unless otherwise stated
-            SearchMode = 'Single';                                                  %   Define file search based on empty argument
-        elseif ~any(strcmpi(SearchMode, {'Single', 'All', 'TroubleShoot'}))              %   Validate second argument
-            error("SearchMode must be 'Single', 'All', or 'TroubleShoot'.");             %       Throw error message
-        end                                                                         %   Continue
-
     %% Select the folder
         if strcmpi(SearchMode, 'TroubleShoot')                                      % SearchMode = Constant filepath for testing
-            if nargin < 3 || ~isfolder(ConstantAdress)                              %   Determine if three fields are provided  
+            if ~isfolder(ConstantAdress)                              %   Determine if three fields are provided  
                 error("For 'TroubleShoot' mode, you must provide a" + ...           %       Throw error message if filepath not defined
                       " valid folder path as the third argument.");                 %   
             end                                                                     %   Continue

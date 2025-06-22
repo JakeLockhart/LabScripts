@@ -3,4 +3,5 @@ function zap
     handles = findall(groot, 'Type', 'figure', 'Tag', 'volshow');
     close(handles);
     clc
+    evalin('base', 'clear');
 end
