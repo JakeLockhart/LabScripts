@@ -1,6 +1,6 @@
 clear; clc; format short g; format compact;
 addpath('C:\Workspace\LabScripts\Functions')
-Lookup = FileLookup('csv', 'all');
+Lookup = FileLookup('csv', 'AllSubFolders');
 Oscope = ReadOscope(Lookup);
 
 PlotTitles = ["Frame (TTL) and Line (Analog) Trigger", "Analog Signal Ringing", "Analog Rising Ringing Signal", "Analog Falling Ringing Signal", "TTL Rising Signal", "TTL Falling Signal"];

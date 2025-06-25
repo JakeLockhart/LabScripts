@@ -1,6 +1,6 @@
 clear; clc; format short; format compact;
 addpath('C:\Workspace\LabScripts\Functions')
-Lookup = FileLookup('csv', 'all');
+Lookup = FileLookup('csv', 'AllSubFolders');
 Oscope = ReadOscope(Lookup);
 
 %%% All Figures
