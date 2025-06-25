@@ -1,4 +1,10 @@
-function [X1, X2, canceled] = UserDefinedPeaks(Lookup, numTiles, plotMode, useAlignedData)
+function [X1, X2, canceled] = UserDefinedPeaks(Lookup, TotalTiles, DisplayLayout, SignalAlignment)
+    arguments
+        Lookup struct
+        TotalTiles (1,1) {mustBeInteger, mustBePositive}
+        DisplayLayout (1,:) char {mustBeMember(DisplayLayout, {'Separate', 'Overlay'})}
+        SignalAlignment (1,:) char {mustBeMember(SignalAlignment, {'RawData', 'AlignedData'})}
+    end
     % Read data from CSV files and populate Temp structure
     for i = 1:Lookup.FileCount
         Name = erase(Lookup.FolderInfo(i).name, ".csv");
@@ -9,8 +15,8 @@ function [X1, X2, canceled] = UserDefinedPeaks(Lookup, numTiles, plotMode, useAl
         Temp.Voltage(i,:) = TempFile{:,5};
     end
 
-    % If 'UseAligned' is passed, perform cross-correlation and create AlignedVoltage
-    if strcmp(useAlignedData, 'UseAligned')
+    % If 'AlignedData' is passed, perform cross-correlation and create AlignedVoltage
+    if strcmp(SignalAlignment, 'AlignedData')
         for i = 1:Lookup.FileCount
             [xc, lags] = xcorr(Temp.Voltage(end,:), Temp.Voltage(i,:));
             [~, Index] = max(xc);
@@ -20,16 +26,16 @@ function [X1, X2, canceled] = UserDefinedPeaks(Lookup, numTiles, plotMode, useAl
     end
 
     % Choose which voltage to plot based on the string input
-    if strcmp(useAlignedData, 'UseAligned')
+    if strcmp(SignalAlignment, 'AlignedData')
         voltageData = Temp.AlignedVoltage;
-    elseif strcmp(useAlignedData, 'UseRaw')
+    elseif strcmp(SignalAlignment, 'RawData')
         voltageData = Temp.Voltage;
     else
-        error('Invalid argument. Use ''UseRaw'' or ''UseAligned''.');
+        error('Invalid argument. Use ''RawData'' or ''AlignedData''.');
     end
 
     % Pass the selected voltage data to the demo for plotting
-    [X1, X2, canceled] = demo(Temp.Time, voltageData, numTiles, plotMode);
+    [X1, X2, canceled] = demo(Temp.Time, voltageData, TotalTiles, DisplayLayout);
     X1 = find(abs(Temp.Time(1,:) - round(X1)) < 1e-6);
     X2 = find(abs(Temp.Time(1,:) - round(X2)) < 1e-6);
     
@@ -40,30 +46,30 @@ function [X1, X2, canceled] = UserDefinedPeaks(Lookup, numTiles, plotMode, useAl
 end
 
 
-function [X1, X2, canceled] = demo(x, y, numTiles, plotMode)
+function [X1, X2, canceled] = demo(x, y, TotalTiles, DisplayLayout)
     % Create figure and layout
     fig = figure('Name', 'Demo', 'NumberTitle', 'off', 'Position', [100 100 800 600]);
-    t = tiledlayout(numTiles, 1, 'Parent', fig, 'TileSpacing', 'compact', 'Padding', 'compact');
+    t = tiledlayout(TotalTiles, 1, 'Parent', fig, 'TileSpacing', 'compact', 'Padding', 'compact');
 
     % Initialize variables
-    ax = gobjects(numTiles, 1);
-    xl1 = gobjects(numTiles, 1);
-    xl2 = gobjects(numTiles, 1);
+    ax = gobjects(TotalTiles, 1);
+    xl1 = gobjects(TotalTiles, 1);
+    xl2 = gobjects(TotalTiles, 1);
 
     % Initial Xline values
     x1_init = min(x(1,:)) + (max(x(1,:)) - min(x(1,:))) * 0.3;
     x2_init = min(x(1,:)) + (max(x(1,:)) - min(x(1,:))) * 0.7;
 
     % Plot data
-    if strcmp(plotMode, "single")
-        for i = 1:numTiles
+    if strcmp(DisplayLayout, "Separate")
+        for i = 1:TotalTiles
             ax(i) = nexttile(t);
             plot(ax(i), x(i,:), y(i,:));
             hold on;
             xl1(i) = xline(ax(i), x1_init, 'r', 'LineWidth', 2);
             xl2(i) = xline(ax(i), x2_init, 'b', 'LineWidth', 2);
         end
-    elseif strcmp(plotMode, "all")
+    elseif strcmp(DisplayLayout, "Overlay")
         ax(1) = nexttile(t);
         hold(ax(1), 'on');
         for i = 1:size(y, 1)
@@ -82,13 +88,13 @@ function [X1, X2, canceled] = demo(x, y, numTiles, plotMode)
     sld2.UserData.LastValue = sld2.Value;
 
     % Add listener to sliders for real-time updates
-    addlistener(sld1, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, true, numTiles));
-    addlistener(sld2, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, false, numTiles));
+    addlistener(sld1, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, true, TotalTiles));
+    addlistener(sld2, 'ContinuousValueChange', @(src, ~) adaptive_xline_update(src, xl1, xl2, false, TotalTiles));
 
     % Create buttons
     create_button('Get Xline Values', [0.3 0.02 0.2 0.05], @() uiresume(fig));
-    create_button('Check', [0.55 0.02 0.2 0.05], @() check_xlim(ax, xl1(1).Value, xl2(1).Value, numTiles));
-    create_button('Reset', [0.8 0.02 0.2 0.05], @() reset_demo(xl1, xl2, x1_init, x2_init, numTiles));
+    create_button('Check', [0.55 0.02 0.2 0.05], @() check_xlim(ax, xl1(1).Value, xl2(1).Value, TotalTiles));
+    create_button('Reset', [0.8 0.02 0.2 0.05], @() reset_demo(xl1, xl2, x1_init, x2_init, TotalTiles));
     create_button('Cancel', [0.05 0.02 0.2 0.05], @() cancel_demo(fig));
 
     % Wait for user interaction
@@ -113,10 +119,10 @@ end
 
 function create_button(label, position, callback)
     uicontrol('Style', 'pushbutton', 'String', label, 'Units', 'normalized', ...
-              'Position', position, 'Callback', @(~, ~) callback());
+              'Position', position, 'callback', @(~, ~) callback());
 end
 
-function adaptive_xline_update(slider, xl1, xl2, isX1, numTiles)
+function adaptive_xline_update(slider, xl1, xl2, isX1, TotalTiles)
     persistent lastUpdateTime;
 
     % Throttle updates
@@ -136,7 +142,7 @@ function adaptive_xline_update(slider, xl1, xl2, isX1, numTiles)
                 flash_xline(xl1(1));
                 warning('Xline 1 cannot exceed Xline 2. Keeping at limit.');
             end
-            for i = 1:numTiles
+            for i = 1:TotalTiles
                 xl1(i).Value = newValue;
             end
         else
@@ -145,7 +151,7 @@ function adaptive_xline_update(slider, xl1, xl2, isX1, numTiles)
                 flash_xline(xl2(1));
                 warning('Xline 2 cannot be lower than Xline 1. Keeping at limit.');
             end
-            for i = 1:numTiles
+            for i = 1:TotalTiles
                 xl2(i).Value = newValue;
             end
         end
@@ -156,14 +162,14 @@ function adaptive_xline_update(slider, xl1, xl2, isX1, numTiles)
     end
 end
 
-function check_xlim(ax, X1, X2, numTiles)
-    for i = 1:numTiles
+function check_xlim(ax, X1, X2, TotalTiles)
+    for i = 1:TotalTiles
         ax(i).XLim = [0.9 * X1, 1.1 * X2];
     end
 end
 
-function reset_demo(xl1, xl2, x1_init, x2_init, numTiles)
-    for i = 1:numTiles
+function reset_demo(xl1, xl2, x1_init, x2_init, TotalTiles)
+    for i = 1:TotalTiles
         xl1(i).Value = x1_init;
         xl2(i).Value = x2_init;
     end
