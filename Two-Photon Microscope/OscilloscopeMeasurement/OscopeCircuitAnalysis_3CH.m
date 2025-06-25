@@ -2,7 +2,7 @@ clear; clc; format short g; format compact;
 
 addpath('C:\Workspace\LabScripts\Functions')
 Lookup = FileLookup('csv');
-[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, Lookup.FileCount, 'single', 'UseRaw');
+[LowerBound, UpperBound, Canceled] = UserDefinedPeaks(Lookup, Lookup.FileCount, 'Separate', 'RawData');
 Oscope = ReadOscope(Lookup);
 
 %% Cross Correlation
