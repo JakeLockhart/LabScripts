@@ -1,4 +1,4 @@
-classdef Oscope_DataAnalysis
+classdef WaveformAnalysis
     properties
         % Loaded Data Porpoerties
         Signals (1,:) string 
@@ -25,8 +25,7 @@ classdef Oscope_DataAnalysis
 
     methods
         %%  Constructor - Create an object based on oscilloscope data, the types of signals, and the bounds of a single pulse
-        %function obj = Oscope_DataAnalysis(Oscope, Signals, LowerBound, UpperBound)
-        function obj = Oscope_DataAnalysis(Signals, LoadedData)
+        function obj = WaveformAnalysis(Signals, LoadedData)
             obj.Oscope = LoadedData.Oscope;
             obj.Signals = Signals;
             obj.Bounds.LowerBound = LoadedData.Bounds.LowerBound;
@@ -37,7 +36,7 @@ classdef Oscope_DataAnalysis
         %%  Method #1 - Determine the cross correlation, lags, and shift between each recorded oscilloscope signal 
         function obj = CrossCorrelation(obj)
             % CrossCorrelation() 
-            %   Compute the cross correlation between all signals within the class Oscope_DataAnalysis
+            %   Compute the cross correlation between all signals within the class WaveformAnalysis
             % Syntax:
             %   obj = CrossCorrelation(obj)
             % Description:
@@ -90,6 +89,8 @@ classdef Oscope_DataAnalysis
             %          - If not provided, function computes histogram for all signals within parent obj.
             % Output:
             %   obj.{Peaks, Counts}.(Signal)
+            FieldName = matlab.lang.makeValidName(Signal);
+
             if nargin < 2 || isempty(Signal) 
                 for i = 1:length(obj.Signals)
                     obj = obj.VoltageSteps(obj.Signals(i));
@@ -108,8 +109,6 @@ classdef Oscope_DataAnalysis
             if isempty(idx)
                 error('%s is not found within signal list', Signal);
             end
-            FieldName = matlab.lang.makeValidName(Signal);
-
 
             Voltage = obj.Oscope.Voltage(idx,:);
             TotalBins = round(sqrt(size(Voltage,2)));
@@ -138,10 +137,23 @@ classdef Oscope_DataAnalysis
     end
 
     methods (Static)
-        function LoadedData = LoadData()
-            LoadedData.Lookup = FileLookup('csv');
+        function LoadedData = LoadData(FileType, SearchMode, ConstantAddress, DisplayLayout, SignalAlignment, TotalTiles)
+            arguments
+                FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tiff', 'mdf'})} = 'csv'
+                SearchMode char {mustBeMember(SearchMode, {'SingleFolder', 'AllSubFolders', 'TroubleShoot'})} = 'SingleFolder'
+                ConstantAddress char = ''
+                DisplayLayout (1,:) char {mustBeMember(DisplayLayout, {'Separate', 'Overlay'})} = 'Separate'
+                SignalAlignment (1,:) char {mustBeMember(SignalAlignment, {'RawData', 'AlignedData'})} = 'RawData'
+                TotalTiles (1,1) {mustBeInteger, mustBePositive} = 1
+            end
+
+            LoadedData.Lookup = FileLookup(FileType, SearchMode, ConstantAddress);
             LoadedData.Oscope = ReadOscope(LoadedData.Lookup);
-            [LowerBound, UpperBound, Canceled] = UserDefinedPeaks(LoadedData.Lookup, LoadedData.Lookup.FileCount, 'single', 'UseRaw');
+
+            if nargin < 6 || isempty(TotalTiles)
+                TotalTiles = LoadedData.Lookup.FileCount;
+            end
+            [LowerBound, UpperBound, Canceled] = UserDefinedPeaks(LoadedData.Lookup, TotalTiles, DisplayLayout, SignalAlignment);
             LoadedData.Bounds.LowerBound = LowerBound;
             LoadedData.Bounds.UpperBound = UpperBound;
             LoadedData.Bounds.Canceled = Canceled;
