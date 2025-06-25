@@ -1,19 +1,19 @@
-function Lookup = FileLookup(FileType, SearchMode, ConstantAdress)
+function Lookup = FileLookup(FileType, SearchMode, ConstantAddress)
     arguments
         FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tiff', 'mdf'})};
-        SearchMode char {mustBeMember(SearchMode, {'Single', 'All', 'TroubleShoot'})} = 'Single';
-        ConstantAdress char = ''
+        SearchMode char {mustBeMember(SearchMode, {'SingleFolder', 'AllSubFolders', 'TroubleShoot'})} = 'SingleFolder';
+        ConstantAddress char = ''
     end
     %% Define the file structure
         Lookup.FileType = strcat('*.', FileType);                                   % Choose file type
     
     %% Select the folder
         if strcmpi(SearchMode, 'TroubleShoot')                                      % SearchMode = Constant filepath for testing
-            if ~isfolder(ConstantAdress)                                            %   Determine if three fields are provided  
+            if ~isfolder(ConstantAddress)                                           %   Determine if three fields are provided  
                 error("For 'TroubleShoot' mode, you must provide a" + ...           %       Throw error message if filepath not defined
                       " valid folder path as the third argument.");                 %   
             end                                                                     %   Continue
-            Lookup.FolderAddress = ConstantAdress;                                  %   Define folder path location
+            Lookup.FolderAddress = ConstantAddress;                                 %   Define folder path location
         else                                                                        %   SearchMode /= Constant filepath for testing
             Lookup.FolderAddress = uigetdir('*.*','Select a folder');               %   Choose folder path location
             if isequal(Lookup.FolderAddress, 0)                                     %       Esure directory is found and user did not cancel operation
@@ -22,10 +22,10 @@ function Lookup = FileLookup(FileType, SearchMode, ConstantAdress)
         end
 
     %% Determine file search based on SearchMode
-        if strcmpi(SearchMode, 'All')                                               % SearchMode = All files within subfolders
+        if strcmpi(SearchMode, 'AllSubFolders')                                     % SearchMode = All files within subfolders
             searchPattern = fullfile(Lookup.FolderAddress, '**', Lookup.FileType);  %   Find All FileType within subfolders
         else                                                                        %   SearchMode /= All files within subfolders
-            searchPattern = fullfile(Lookup.FolderAddress, Lookup.FileType);        %   Find All Filetype within Single folder
+            searchPattern = fullfile(Lookup.FolderAddress, Lookup.FileType);        %   Find All Filetype within SingleFolder folder
         end                                                                         %   continue
 
     %% Find All FileType within defined folder
