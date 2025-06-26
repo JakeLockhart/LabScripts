@@ -1,7 +1,8 @@
-classdef WaveformAnalysis
+classdef Oscope_WaveformAnalysis
     properties
         % Loaded Data Porpoerties
         Signals (1,:) string 
+        Lookup struct = struct()
         Oscope struct = struct()
         Bounds struct = struct( ...
             'LowerBound', 0, ...
@@ -25,18 +26,19 @@ classdef WaveformAnalysis
 
     methods
         %%  Constructor - Create an object based on oscilloscope data, the types of signals, and the bounds of a single pulse
-        function obj = WaveformAnalysis(Signals, LoadedData)
-            obj.Oscope = LoadedData.Oscope;
+        function obj = Oscope_WaveformAnalysis(Signals, LoadedData)
+            
             obj.Signals = Signals;
+            obj.Lookup = LoadedData.Lookup;
+            obj.Oscope = LoadedData.Oscope;
             obj.Bounds.LowerBound = LoadedData.Bounds.LowerBound;
             obj.Bounds.UpperBound = LoadedData.Bounds.UpperBound;
         end
 
-        %% Method - Identify a user defined peak
-        %%  Method #1 - Determine the cross correlation, lags, and shift between each recorded oscilloscope signal 
+        %%  Determine the cross correlation, lags, and shift between each recorded oscilloscope signal 
         function obj = CrossCorrelation(obj)
             % CrossCorrelation() 
-            %   Compute the cross correlation between all signals within the class WaveformAnalysis
+            %   Compute the cross correlation between all signals within the class Oscope_WaveformAnalysis
             % Syntax:
             %   obj = CrossCorrelation(obj)
             % Description:
@@ -70,7 +72,7 @@ classdef WaveformAnalysis
             end
         end
 
-        %%  Method #2 - Determine bin size, obj.Count and obj.Peaks of the recorded oscilloscope data using histograms
+        %%  Determine bin size, obj.Count and obj.Peaks of the recorded oscilloscope data using histograms
         function obj = VoltageSteps(obj, Signal)
             % VoltageSteps()
             % Syntax:
@@ -89,8 +91,6 @@ classdef WaveformAnalysis
             %          - If not provided, function computes histogram for all signals within parent obj.
             % Output:
             %   obj.{Peaks, Counts}.(Signal)
-            FieldName = matlab.lang.makeValidName(Signal);
-
             if nargin < 2 || isempty(Signal) 
                 for i = 1:length(obj.Signals)
                     obj = obj.VoltageSteps(obj.Signals(i));
@@ -104,7 +104,8 @@ classdef WaveformAnalysis
                 end
                 return
             end
-            
+
+            FieldName = matlab.lang.makeValidName(Signal);            
             idx = find(strcmp(obj.Signals, Signal), 1);
             if isempty(idx)
                 error('%s is not found within signal list', Signal);
