@@ -27,7 +27,6 @@ classdef Oscope_WaveformAnalysis
     methods
         %%  Constructor - Create an object based on oscilloscope data, the types of signals, and the bounds of a single pulse
         function obj = Oscope_WaveformAnalysis(Signals, LoadedData)
-            
             obj.Signals = Signals;
             obj.Lookup = LoadedData.Lookup;
             obj.Oscope = LoadedData.Oscope;
