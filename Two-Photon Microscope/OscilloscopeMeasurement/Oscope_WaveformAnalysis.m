@@ -32,6 +32,10 @@ classdef Oscope_WaveformAnalysis
             obj.Oscope = LoadedData.Oscope;
             obj.Bounds.LowerBound = LoadedData.Bounds.LowerBound;
             obj.Bounds.UpperBound = LoadedData.Bounds.UpperBound;
+
+            fprintf("Automated Analysis in constructor function\n\tCrossCorrelation\n\tVoltageSteps\n")
+            obj = obj.CrossCorrelation;
+            obj = obj.VoltageSteps;
         end
 
         %%  Determine the cross correlation, lags, and shift between each recorded oscilloscope signal 
