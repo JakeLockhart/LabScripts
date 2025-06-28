@@ -2,19 +2,32 @@ function [X1, X2, canceled] = UserDefinedPeaks(Lookup, TotalTiles, DisplayLayout
     % UserDefinedPeaks()
     %   Create a user interface to define a region of interest within a plotted dataset.
     %   Created by: jsl5865
+    %
     % Syntax:
     %   [X1, X2, canceled] = UserDefinedPeaks(Lookup, TotalTiles, DisplayLayout, SignalAlignment)
+    %
     % Description:
-    %   
+    %   This function reads time-voltage data from multiple CSV files specified 
+    %       in the Lookup structure, optionally aligns the signals using cross-correlation,
+    %       and presents the signals in a figure with interactive vertical lines (xlines).
+    %       The user can adjust these lines via sliders to define two boundary points 
+    %       (X1 and X2) representing a region of interest in the data.
+    %
     % Input: 
-    %   Lookup - 
-    %   TotalTiles - 
-    %   DisplayLayout - 
-    %   SignalAlignment - 
+    %   Lookup          - Struct containing file information including FolderInfo, FolderAddress,
+    %                       and FileCount. Used to read the data files.
+    %   TotalTiles      - Positive integer specifying the number of subplots or signals to display.
+    %   DisplayLayout   - Char vector, either 'Separate' or 'Overlay'.
+    %                       'Separate' plots signals in individual subplots stacked vertically.
+    %                       'Overlay' plots all signals overlaid in a single plot.
+    %   SignalAlignment - Char vector, either 'RawData' or 'AlignedData'.
+    %                       'AlignedData' applies cross-correlation alignment to signals.
+    %
     % Output:
-    %   X1 - 
-    %   X2 - 
-    %   canceled - 
+    %   X1          - Numeric scalar or index indicating the first user-selected boundary in the time axis.
+    %   X2          - Numeric scalar or index indicating the second user-selected boundary.
+    %   canceled    - Logical flag indicating whether the user canceled the operation (true) or completed it (false).
+ 
     arguments
         Lookup struct
         TotalTiles (1,1) {mustBeInteger, mustBePositive}
