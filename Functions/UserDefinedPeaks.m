@@ -1,4 +1,20 @@
 function [X1, X2, canceled] = UserDefinedPeaks(Lookup, TotalTiles, DisplayLayout, SignalAlignment)
+    % UserDefinedPeaks()
+    %   Create a user interface to define a region of interest within a plotted dataset.
+    %   Created by: jsl5865
+    % Syntax:
+    %   [X1, X2, canceled] = UserDefinedPeaks(Lookup, TotalTiles, DisplayLayout, SignalAlignment)
+    % Description:
+    %   
+    % Input: 
+    %   Lookup - 
+    %   TotalTiles - 
+    %   DisplayLayout - 
+    %   SignalAlignment - 
+    % Output:
+    %   X1 - 
+    %   X2 - 
+    %   canceled - 
     arguments
         Lookup struct
         TotalTiles (1,1) {mustBeInteger, mustBePositive}

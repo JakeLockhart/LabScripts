@@ -1,4 +1,24 @@
 function Lookup = FileLookup(FileType, SearchMode, ConstantAddress)
+    % FileLookup()
+    %   Determine file path/directories as well as folder information to be used for reading file information
+    %   Created by: jsl5865
+    % Syntax:
+    %   Lookup = FileLookup(FileType, SearchMode, ConstantAddress)
+    % Description:
+    %   This function creates a structure (Lookup) that contains the type of files being found, the folder address,
+    %       the file address, total number of files/subfolders, the folder information structure, and the current 
+    %       folder.
+    %   Any file type can be chosen; a preset list has been made which can be extended.
+    %   Currently supports multiple search modes:   Files within a single folder (SingleFolder)
+    %                                               All files within subfolders (AllSubFolders
+    %                                               One file (TroubleShoot)
+    % Input: 
+    %   FileType - The file extension for the type of desired files (.csv, .txt, .jpg, etc)
+    %   SearchMode - File selection protocol
+    %   ConstantAddress - Single file path that will not call for user input.
+    %                   - Only necessary if SearchMode = TroubleShoot
+    % Output:
+    %   Lookup.{FileType, FolderAddress, AllFiles, FolderInfo.{name, folder, date, bytes, isdir, datenum}, FileCount, FolderCount, CurrentFolder}
     arguments
         FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tiff', 'mdf'})};
         SearchMode char {mustBeMember(SearchMode, {'SingleFolder', 'AllSubFolders', 'TroubleShoot'})} = 'SingleFolder';

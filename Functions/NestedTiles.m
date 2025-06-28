@@ -1,4 +1,21 @@
 function [FigureWindow, Main, Children] = NestedTiles(ParentLayout, ChildLayout, ParentDirection, ChildDirection)
+    % NestedTiles()
+    %   Create a nested tiledlayout for a figure window
+    %   Created by: jsl5865
+    % Syntax:
+    %   [FigureWindow, Main, Children] = NestedTiles(ParentLayout, ChildLayout, ParentDirection, ChildDirection)
+    % Description:
+    %   
+    % Input: 
+    %   ParentLayout - 
+    %   ChildLayout - 
+    %   ParentDirection - 
+    %   ChildDirection - 
+    % Output:
+    %   FigureWindow - 
+    %   Main - 
+    %   Children - 
+
     arguments
         ParentLayout (1,1) {mustBeInteger, mustBePositive}
         ChildLayout (1,:) cell {mustBeEqualSize(ChildLayout, ParentLayout)}
