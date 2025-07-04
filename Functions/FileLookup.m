@@ -24,7 +24,7 @@ function Lookup = FileLookup(FileType, SearchMode, ConstantAddress)
     % Output:
     %   Lookup.{FileType, FolderAddress, AllFiles, FolderInfo.{name, folder, date, bytes, isdir, datenum}, FileCount, FolderCount, CurrentFolder}
     arguments
-        FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tiff', 'mdf'})};
+        FileType char {mustBeMember(FileType, {'csv', 'xlsx', 'txt', 'tif', 'mdf'})};
         SearchMode char {mustBeMember(SearchMode, {'SingleFolder', 'AllSubFolders', 'TroubleShoot'})} = 'SingleFolder';
         ConstantAddress char = ''
     end
