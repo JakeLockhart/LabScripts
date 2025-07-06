@@ -12,9 +12,7 @@ function zap
     %   []
     % Output:
     %   []
-    close all;
-    handles = findall(groot, 'Type', 'figure', 'Tag', 'volshow');
-    close(handles);
-    clc
+    close(findall(groot, 'Type', 'figure'));
+    clc;
     evalin('base', 'clear');
 end
