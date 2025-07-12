@@ -3,6 +3,7 @@
 #include "VoltageStep.h"
 
 void CreateEOMPulse() {
+    delayMicroseconds(7.5);
     if (CurrentImagingPlane == 1) {
         analogWrite(TTLPulse_EOM, LaserVoltage_Bits[VoltageStepIndex]);
         

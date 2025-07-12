@@ -5,6 +5,7 @@
 
 void CreatePulses(){
     digitalWrite(TTLPulse_ETL, HIGH);
+    delayMicroseconds(2);
     CreateEOMPulse();
     digitalWrite(TTLPulse_ETL, LOW);
 }

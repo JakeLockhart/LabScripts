@@ -36,14 +36,15 @@ void setup() {
 void loop() {
     if (EOMFlag || ETLFlag){
         if (EOMFlag){
-            delayMicroseconds(7.5);
             CreateEOMPulse();
             EOMFlag = false;
+            ETLFlag = false;
         }
         if (ETLFlag){
             CreatePulses();
             //CreateETLPulse(); Originally just CreateETLPulse()
             //CreateEOMPulse(); This delays the EOM pulse creation to after the ETL pulse is returned to LOW. (De-syncs first line)
+            EOMFlag = false;
             ETLFlag = false;
         }
     }
