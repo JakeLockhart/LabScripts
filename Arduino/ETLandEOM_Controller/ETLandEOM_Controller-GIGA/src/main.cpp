@@ -35,6 +35,7 @@ void setup() {
 void loop() {
     if (EOMFlag || ETLFlag){
         if (EOMFlag){
+            delayMicroseconds(20);
             CreateEOMPulse();
             EOMFlag = false;
         }
