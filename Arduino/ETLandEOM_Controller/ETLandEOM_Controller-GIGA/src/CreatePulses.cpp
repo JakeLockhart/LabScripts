@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include "Parameters.h"
 #include "VoltageStep.h"
+#include "CreateEOMPulse.h"
 
-void CreateETLPulse() {
+void CreatePulses(){
     digitalWrite(TTLPulse_ETL, HIGH);
-    delayMicroseconds(PulseWidth);
+    CreateEOMPulse();
     digitalWrite(TTLPulse_ETL, LOW);
 }

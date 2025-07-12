@@ -15,6 +15,7 @@
 #include "VoltageStep.h"
 #include "FrameTriggerInterrupt.h"
 #include "LineTriggerInterrupt.h"
+#include "CreatePulses.h"
 
 
 void setup() {
@@ -40,8 +41,9 @@ void loop() {
             EOMFlag = false;
         }
         if (ETLFlag){
-            CreateETLPulse();
-            CreateEOMPulse();
+            CreatePulses();
+            //CreateETLPulse(); Originally just CreateETLPulse()
+            //CreateEOMPulse(); This delays the EOM pulse creation to after the ETL pulse is returned to LOW. (De-syncs first line)
             ETLFlag = false;
         }
     }
