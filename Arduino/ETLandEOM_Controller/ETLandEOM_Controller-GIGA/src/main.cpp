@@ -35,12 +35,13 @@ void setup() {
 void loop() {
     if (EOMFlag || ETLFlag){
         if (EOMFlag){
-            delayMicroseconds(20);
+            delayMicroseconds(7.5);
             CreateEOMPulse();
             EOMFlag = false;
         }
         if (ETLFlag){
             CreateETLPulse();
+            CreateEOMPulse();
             ETLFlag = false;
         }
     }
