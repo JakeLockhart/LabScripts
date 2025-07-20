@@ -82,12 +82,22 @@ classdef MassSpectrometryDataAnalysis
 
     %% Callable functions
     methods (Access = public)
-        function [Display] = DisplayGelParameters(obj, SelectionMode)
+        function [GelData, Display] = GelParameters(obj, SelectionMode) % Solely to show ALL data from plots, no comparison, just display. use sortrows() 
             arguments
                 obj
                 SelectionMode string {mustBeMember(SelectionMode, ["single", "multiple"])} = "single";
             end
             Display = obj.UI_FilesandVariables(SelectionMode);
+            GelData = [];
+            switch SelectionMode
+                case "single"
+                    GelData = DisplaySingleGelProperties(obj, Display);
+                case "multiple"
+                    GelData = DisplayMultipleGelProperties(obj, Display);
+            end
+        end
+
+        function CompareGels % setdiff() to compare properties
         end
 
         function TotalProteins(obj)
@@ -203,5 +213,19 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function GelData = DisplaySingleGelProperties(obj, Display)
+            GelData = obj.Data.(Display.Gel).Description;
+            for i = 1:length(Display.Vars)
+                switch Display.Vars(i)
+                    case "Description"
+                        continue
+                    otherwise
+                        GelData = [GelData, table(obj.Data.(Display.Gel).(Display.Vars(i)), 'VariableNames', {char(Display.Vars(i))})];
+                end
+            end
+        end
+
+        function GelData = DisplayMultipleGelProperties(obj, Display)
+        end        
     end
 end
