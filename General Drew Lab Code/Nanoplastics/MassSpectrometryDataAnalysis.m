@@ -88,10 +88,16 @@ classdef MassSpectrometryDataAnalysis
                 SelectionMode string {mustBeMember(SelectionMode, ["single", "multiple"])} = "single";
             end
             Display = obj.UI_FilesandVariables(SelectionMode);
-
-            
         end
 
+        function TotalProteins(obj)
+            Fields = string(fieldnames(obj.Data));
+            Alignment = max(strlength(Fields));
+            for i = 1:length(Fields)
+                ProteinCount = height(obj.Data.(Fields(i)).Description);
+                fprintf("%*s   -   %i\n",Alignment, Fields(i), ProteinCount)
+            end
+        end
 
     end
 
