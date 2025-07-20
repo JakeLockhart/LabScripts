@@ -68,7 +68,7 @@ classdef MassSpectrometryDataAnalysis
         Data struct = struct()
     end
 
-    %% Constructor and Commands
+    %% Constructor
     methods
         function obj = MassSpectrometryDataAnalysis()
             addpath("C:\Workspace\LabScripts\Functions");
@@ -220,7 +220,15 @@ classdef MassSpectrometryDataAnalysis
                     case "Description"
                         continue
                     otherwise
-                        GelData = [GelData, table(obj.Data.(Display.Gel).(Display.Vars(i)), 'VariableNames', {char(Display.Vars(i))})];
+                        ParameterData = obj.Data.(Display.Gel).(Display.Vars(i));
+                        if istable(ParameterData)
+                            ParameterData.Properties.VariableNames = {char(Display.Vars(i))};
+                        else
+                            ParameterData = table(ParameterData, 'VariableNames', {char(Display.Vars(i))});
+                        end
+
+                        GelData = [GelData, ParameterData];
+                        %GelData = [GelData, table(obj.Data.(Display.Gel).(Display.Vars(i)), 'VariableNames', {char(Display.Vars(i))})];
                 end
             end
         end
