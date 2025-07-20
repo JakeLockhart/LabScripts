@@ -109,5 +109,3 @@ function NSAF = Calculate_NSAF(MassSpecData, GelBand_Name)
     SAF = MassSpecData.(GelBand_Name).SAF;
     NSAF = SAF ./ sum(SAF);
 end
-
-y = setdiff(MassSpecData.(DisplayGels{2}).Description, MassSpecData.(DisplayGels{1}).Description)
