@@ -97,8 +97,8 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function CompareGels % setdiff() to compare properties
-        end
+        %function CompareGels % setdiff() to compare properties
+        %end
 
         function TotalProteins(obj)
             Fields = string(fieldnames(obj.Data));
@@ -226,14 +226,52 @@ classdef MassSpectrometryDataAnalysis
                         else
                             ParameterData = table(ParameterData, 'VariableNames', {char(Display.Vars(i))});
                         end
-
                         GelData = [GelData, ParameterData];
-                        %GelData = [GelData, table(obj.Data.(Display.Gel).(Display.Vars(i)), 'VariableNames', {char(Display.Vars(i))})];
                 end
             end
         end
 
         function GelData = DisplayMultipleGelProperties(obj, Display)
-        end        
+            GelData = obj.Data.(Display.Gel).Description;
+            for i = 1:length(Display.Vars)
+                switch Display.Vars(i)
+                    case "Description"
+                        continue
+                    otherwise
+
+                end
+
+            end
+        end  
+
+        function CellData = NormalizeTableVars(GelData)
+            CellData = GelData;
+            Fields = fieldnames(CellData);
+            for i = 1:length(Fields)
+                value = GelData.(Fields{i});
+                switch class(CellData.(Fields{i}))
+                    case {'cell', 'double'}
+                        CellData.(Fields{i}) = value;
+                    case 'table'
+                        TempVar = value.Properties.VariableNames{1};
+                        CellData.(Fields{i}) = value.(TempVar);
+                        %CellData.(Fields{i}) = table2cell(CellData.(Fields{i}));
+                end
+            end
+            CellData.Description = string(CellData.Description);
+        end
+
+        function CombinedTable = MergeTables(DataSet)
+            Tables = cellfun(@NormalizeTableVarsToCell, DataSet, 'UniformOutput', false);
+            CombinedTable = Tables{1}
+            for i = 2:length(Tables)
+                CombinedTable = outerjoin(CombinedTable, Tables{i}, 'Keys', 'Description', 'MergeKeys', true, 'Type', 'full');
+            end       
+        end
+
+
+
+
+
     end
 end
