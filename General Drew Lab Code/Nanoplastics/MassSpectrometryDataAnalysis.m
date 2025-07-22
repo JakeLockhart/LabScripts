@@ -232,45 +232,89 @@ classdef MassSpectrometryDataAnalysis
         end
 
         function GelData = DisplayMultipleGelProperties(obj, Display)
-            GelData = obj.Data.(Display.Gel).Description;
-            for i = 1:length(Display.Vars)
-                switch Display.Vars(i)
-                    case "Description"
-                        continue
-                    otherwise
-
-                end
-
+            DataSet = cell(1, length(Display.Gel));
+            for i = 1:length(Display.Gel)
+                DataSet{i} = obj.Data.(Display.Gel(i));
             end
-        end  
 
-        function CellData = NormalizeTableVars(GelData)
-            CellData = GelData;
-            Fields = fieldnames(CellData);
-            for i = 1:length(Fields)
-                value = GelData.(Fields{i});
-                switch class(CellData.(Fields{i}))
-                    case {'cell', 'double'}
-                        CellData.(Fields{i}) = value;
-                    case 'table'
-                        TempVar = value.Properties.VariableNames{1};
-                        CellData.(Fields{i}) = value.(TempVar);
-                        %CellData.(Fields{i}) = table2cell(CellData.(Fields{i}));
-                end
-            end
-            CellData.Description = string(CellData.Description);
+            T = obj.MergeTables(DataSet);
+            GelData = obj.MergeTableParameters(T, Display);
         end
 
-        function CombinedTable = MergeTables(DataSet)
-            Tables = cellfun(@NormalizeTableVarsToCell, DataSet, 'UniformOutput', false);
-            CombinedTable = Tables{1}
-            for i = 2:length(Tables)
-                CombinedTable = outerjoin(CombinedTable, Tables{i}, 'Keys', 'Description', 'MergeKeys', true, 'Type', 'full');
-            end       
+    function CellData = NormalizeTableVars(obj, GelData)
+        CellData = GelData;
+        Fields = fieldnames(CellData);
+        for i = 1:length(Fields)
+            value = GelData.(Fields{i});
+            switch class(CellData.(Fields{i}))
+                case {'cell', 'double'}
+                    CellData.(Fields{i}) = value;
+                case 'table'
+                    TempVar = value.Properties.VariableNames{1};
+                    CellData.(Fields{i}) = value.(TempVar);
+            end
         end
+        CellData.Description = string(CellData.Description);
+        CellData = struct2table(CellData);
+    end
 
+    function CombinedTable = MergeTables(obj, DataSet)
+        Tables = cellfun(@(d) obj.NormalizeTableVars(d), DataSet, 'UniformOutput', false);
+        CombinedTable = Tables{1};
+        Key = {'Accession', 'Description'};
+        for i = 2:length(Tables)
+            CombinedTable = outerjoin(CombinedTable, Tables{i}, 'Keys', Key, 'MergeKeys', true, 'Type', 'full');
+        end       
+    end
 
+    function DataSet = MergeTableParameters(obj, DataSet, Display)
+        AllParameters = DataSet.Properties.VariableNames;
+        Suffix = '_left$|_right$|_x\d+$|_CombinedTable$|_Var\d+$';
+        Parameters = unique(regexprep(AllParameters, Suffix, ''));
+        
+        for i = 1:length(Parameters)
+            BaseParameter = Parameters{i};
+            FauxParameters = AllParameters(startsWith(AllParameters, BaseParameter) & ~strcmp(AllParameters, BaseParameter));
+            
+            if isempty(FauxParameters)
+                continue
+            end
 
+            CombinedValue = cell(height(DataSet), 1);
+
+            for row = 1:height(DataSet)
+                CombinedRow = cell(1, length(Display.Gel));
+                for column = 1:length(FauxParameters)
+                    ColumnName = FauxParameters{column};
+                    if ismember(ColumnName, DataSet.Properties.VariableNames)
+                        Value = DataSet.(ColumnName)(row);
+                        if iscell(Value)
+                            if isempty(Value) || (numel(Value) == 1 && isempty(Value{1}))
+                                CombinedRow{column} = NaN;
+                            else
+                                CombinedRow{column} = Value;
+                            end
+                        elseif isempty(Value)
+                            CombinedRow{column} = NaN;
+                        else
+                            CombinedRow{column} = Value;
+                        end
+                    else
+                        CombinedRow{column} = NaN;
+                    end
+                end
+                % Pad with NaN if fewer columns than gels
+                if numel(FauxParameters) < length(Display.Gel)
+                    CombinedRow(numel(FauxParameters)+1:length(Display.Gel)) = {NaN};
+                end
+                CombinedValue{row} = CombinedRow;
+            end
+
+            DataSet.(BaseParameter) = CombinedValue;
+            DataSet(:, FauxParameters) = [];
+            AllParameters = DataSet.Properties.VariableNames;
+        end
+    end
 
 
     end
