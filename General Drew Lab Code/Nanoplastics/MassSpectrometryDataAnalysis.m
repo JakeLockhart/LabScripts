@@ -77,7 +77,7 @@ classdef MassSpectrometryDataAnalysis
         function obj = MassSpectrometryDataAnalysis()
             addpath("C:\Workspace\LabScripts\Functions");
             zap
-            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx","TroubleShoot", "C:\Users\jsl5865\Desktop\OneDrive_1_7-15-2025");
+            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx", "TroubleShoot", "C:\Users\jakel\Desktop\OneDrive_1_7-15-2025");
             obj.MatLabVariables = MassSpectrometryDataAnalysis.MakeValidVariables(obj);
             obj = ReadData(obj);
             obj = Add_SAF_NSAF(obj);
@@ -204,7 +204,7 @@ classdef MassSpectrometryDataAnalysis
             Display.Vars = listdlg("PromptString", "Select properties to view", "SelectionMode", "multiple", "ListString", fieldnames(obj.Data.(Display.Gel(1))));
             Temp_Vars = fieldnames(obj.Data.(Display.Gel(1)));
             Display.Vars = Temp_Vars(Display.Vars);
-            Display.Vars = union("Description", Display.Vars, "stable");
+            Display.Vars = union(obj.Keys, Display.Vars, "stable");
             
 
             fprintf("Gel band(s) selected:\n")
@@ -235,14 +235,16 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function GelData = DisplayMultipleGelProperties(obj, Display)
+        function [GelData] = DisplayMultipleGelProperties(obj, Display)
             DataSet = cell(1, length(Display.Gel));
             for i = 1:length(Display.Gel)
                 DataSet{i} = obj.Data.(Display.Gel(i));
             end
 
             MergedTable = obj.MergeTables(DataSet);
-            GelData = obj.MergeTableParameters(MergedTable, Display);
+            MergedParameters = obj.MergeTableParameters(MergedTable, Display);
+            ReducedParameters = obj.ShowDesiredParameters(MergedParameters, Display);
+            GelData = obj.ExpandCells(ReducedParameters, Display);
         end
 
         function CellData = NormalizeTableVars(obj, GelData)
@@ -320,6 +322,30 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function SelectedDataSet = ShowDesiredParameters(obj, DataSet, Display)
+            SelectedDataSet = DataSet(:, Display.Vars);
+        end
+
+        function DisplayDataSet = ExpandCells(obj, DataSet, Display)
+            for i = 1:length(Display.Vars)
+                Parameter = Display.Vars{i};
+                if ~ismember(Parameter, obj.Keys)
+                    ParameterData = obj.NaN2Inf(DataSet.(Parameter));
+                    DataSet.(Parameter) = cellfun(@(x) strjoin(string(x), sprintf(' ')), ParameterData, "UniformOutput", false);
+                end
+            end
+            DisplayDataSet = DataSet(:,Display.Vars);
+        end
+
+        function DataSet = NaN2Inf(obj, DataSet)
+            for i = 1:length(DataSet)
+                for j = 1:length(DataSet{i})
+                    if isnan(DataSet{i}{j}(:))
+                        DataSet{i}{j} = "NaN";
+                    end
+                end
+            end
+        end
 
     end
 end
