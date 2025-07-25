@@ -77,7 +77,7 @@ classdef MassSpectrometryDataAnalysis
         function obj = MassSpectrometryDataAnalysis()
             addpath("C:\Workspace\LabScripts\Functions");
             zap
-            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx", "TroubleShoot", "C:\Users\jakel\Desktop\OneDrive_1_7-15-2025");
+            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx", "TroubleShoot", "C:\Users\jsl5865\Desktop\OneDrive_1_7-15-2025");
             obj.MatLabVariables = MassSpectrometryDataAnalysis.MakeValidVariables(obj);
             obj = ReadData(obj);
             obj = Add_SAF_NSAF(obj);
@@ -86,6 +86,15 @@ classdef MassSpectrometryDataAnalysis
 
     %% Callable functions
     methods (Access = public)
+        function TotalProteins(obj)
+            Fields = string(fieldnames(obj.Data));
+            Alignment = max(strlength(Fields));
+            for i = 1:length(Fields)
+                ProteinCount = height(obj.Data.(Fields(i)).Description);
+                fprintf("%*s   -   %i\n",Alignment, Fields(i), ProteinCount)
+            end
+        end
+
         function [GelData, Display] = GelParameters(obj, SelectionMode) % Solely to show ALL data from plots, no comparison, just display. use sortrows() 
             arguments
                 obj
@@ -101,17 +110,26 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function [FlaggedProteins, GelTypes, Parameter] = Plot_InputvsSamples(obj)
+            GelTypes = obj.UI_DefineInputUnboundElution;
+            Parameter = obj.UI_GetVariables(GelTypes);  
+            for i = 1:length(GelTypes)
+
+            end
+
+            [Input, BoundvsUnbound] = CalculatePlotData_InputvsSamples(obj, GelTypes, Parameter)
+            
+
+            FlaggedProteins = 1;
+            %[x, y] = CalculatePlotData_InputvsSamples(obj, Display)
+
+        end
+
+        %function [GelData] = SortGelData(obj, GelData)
+        %   Sortingcriteria = UI_getvariable()
+        %end
         %function CompareGels % setdiff() to compare properties
         %end
-
-        function TotalProteins(obj)
-            Fields = string(fieldnames(obj.Data));
-            Alignment = max(strlength(Fields));
-            for i = 1:length(Fields)
-                ProteinCount = height(obj.Data.(Fields(i)).Description);
-                fprintf("%*s   -   %i\n",Alignment, Fields(i), ProteinCount)
-            end
-        end
 
     end
 
@@ -217,6 +235,71 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function GelTypes = UI_DefineInputUnboundElution(obj)
+            Figure = figure("Name", "Define gel samples {Input, Unbound, Bound}", ...
+                            'NumberTitle', 'off', 'MenuBar', 'none', 'ToolBar', 'none', ...
+                            'Resize', 'off', 'Position', [500, 500, 300, 200]);
+
+            Labels = {"Choose input gel", "Choose unbound gel", "Choose bound gel"};
+            OptionList = fieldnames(obj.Data);
+
+            Field.LabelWidth = 150;
+            Field.DropDownWidth = 150;
+            Field.RowHeight = 30;
+            Field.TopMargin = 50;
+            Field.Spacing = 10;
+
+            DropdownHandles = gobjects(1, length(Labels));
+
+            for i = 1:length(Labels)
+                FieldPosition = Field.TopMargin + (length(Labels)-i) * (Field.RowHeight + Field.Spacing);
+
+                uicontrol("Style", "text", "Parent", Figure, ...
+                          "String", Labels{i}, 'HorizontalAlignment', 'left', ...
+                          'Position', [20, FieldPosition, Field.LabelWidth, Field.RowHeight]);
+
+                DropdownHandles(i) = uicontrol("Style", "popupmenu", "Parent", Figure, ...
+                                               "String", OptionList, ...
+                                               'Position', [130, FieldPosition, Field.DropDownWidth, Field.RowHeight]);
+            end
+
+            uicontrol('Style', 'pushbutton', 'String', 'OK', ...
+                      'Position', [50, 10, 80, 30], ...
+                      'Callback', @(src, event) onOK());
+
+            uicontrol('Style', 'pushbutton', 'String', 'Cancel', ...
+                      'Position', [170, 10, 80, 30], ...
+                      'Callback', @(src, event) close(Figure));
+
+            uiwait(Figure);
+
+            function onOK()
+                selections = cell(1, length(DropdownHandles));
+                for j = 1:length(DropdownHandles)
+                    idx = DropdownHandles(j).Value;
+                    selections{j} = OptionList{idx};
+                end
+
+                if numel(unique(selections)) < numel(selections)
+                    errordlg('Each selection must be unique. Please choose different gels.', ...
+                             'Duplicate Selection');
+                    return; 
+                end
+
+                GelTypes = struct( ...
+                                  'InputGel', selections{1}, ...
+                                  'UnboundGel', selections{2}, ...
+                                  'BoundGel', selections{3});
+                close(Figure);
+            end
+        end
+
+        function Parameter = UI_GetVariables(obj, GelTypes)
+            Parameter = listdlg("PromptString", "Select properties to view", "SelectionMode", "single", "ListString", fieldnames(obj.Data.(GelTypes.InputGel)));
+            Temp_Parameter = fieldnames(obj.Data.(GelTypes.InputGel));
+            Parameter = Temp_Parameter(Parameter);
+        end
+
         function GelData = DisplaySingleGelProperties(obj, Display)
             GelData = obj.Data.(Display.Gel).Description;
             for i = 1:length(Display.Vars)
@@ -235,7 +318,7 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function [GelData] = DisplayMultipleGelProperties(obj, Display)
+        function GelData = DisplayMultipleGelProperties(obj, Display)
             DataSet = cell(1, length(Display.Gel));
             for i = 1:length(Display.Gel)
                 DataSet{i} = obj.Data.(Display.Gel(i));
@@ -347,5 +430,13 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function [Input, BoundvsUnbound] = CalculatePlotData_InputvsSamples(obj, GelTypes, Parameter)
+            PlotData.Input = obj.Data.(GelTypes.Input).(Parameter);
+            PlotData.Bound = obj.Data.(GelTypes.Bound).(Parameter);
+            PlotData.Unbound = obj.Data.(GelTypes.Unbound).(Parameter);
+
+            Input = PlotData.Input;
+            BoundvsUnbound = (PlotData.Bound) ./ (PlotData.Bound + PlotData.Unbound);
+        end
     end
 end
