@@ -110,6 +110,11 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
+        function CreateExcelFile(obj, GelData, FileName)
+            FileName = FileName + ".xlsx";
+            writetable(GelData, FileName);
+        end
+
         function [FlaggedProteins, GelTypes, Parameter] = Plot_InputvsSamples(obj)
             GelTypes = obj.UI_DefineInputUnboundElution;
             Parameter = obj.UI_GetVariables(GelTypes);  
