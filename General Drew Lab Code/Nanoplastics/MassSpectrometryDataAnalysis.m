@@ -104,15 +104,31 @@ classdef MassSpectrometryDataAnalysis
             GelData = [];
             switch SelectionMode
                 case "single"
-                    GelData = DisplaySingleGelProperties(obj, Display);
+                    GelData = SingleGelProperties(obj, Display);
                 case "multiple"
-                    GelData = DisplayMultipleGelProperties(obj, Display);
+                    GelData = MultipleGelProperties(obj, Display);
             end
         end
 
         function CreateExcelFile(~, GelData, FileName)
             FileName = FileName + ".xlsx";
             writetable(GelData, FileName);
+        end
+
+        function [GelData, t] = PlotFoldEnrchiment(obj)
+            GelSet = UI_DefineInputUnboundElution(obj);
+            Parameter = UI_GetVariables(obj, GelSet);
+            Fields = fieldnames(GelSet);
+            for i = 1:length(fieldnames(GelSet))     
+                Display.Gel(i) = string(GelSet.(Fields{i}));
+            end
+            Display.Vars = Parameter;
+            Display.Vars = union(obj.Keys, Display.Vars, "stable");
+
+            GelData = MultipleGelProperties(obj, Display);
+            Elutions = obj.ExtractValuesFromMergedTable(GelData, Fields);
+            [t.Reference, t.BindingRatio, t.Bound, t.Unbound] = obj.FoldEnrichment(Elutions, Fields);
+
         end
     end
 
@@ -283,7 +299,7 @@ classdef MassSpectrometryDataAnalysis
             Parameter = string(Temp_Parameter(Parameter));
         end
 
-        function GelData = DisplaySingleGelProperties(obj, Display)
+        function GelData = SingleGelProperties(obj, Display)
             GelData = obj.Data.(Display.Gel).Description;
             for i = 1:length(Display.Vars)
                 switch Display.Vars(i)
@@ -301,7 +317,7 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function [GelData] = DisplayMultipleGelProperties(obj, Display)
+        function [GelData] = MultipleGelProperties(obj, Display)
             DataSet = cell(1, length(Display.Gel));
             for i = 1:length(Display.Gel)
                 DataSet{i} = obj.Data.(Display.Gel(i));
@@ -409,6 +425,27 @@ classdef MassSpectrometryDataAnalysis
                     end
                 end
             end
+        end
+
+        function Elutions = ExtractValuesFromMergedTable(~, GelData, Fields)
+            TotalGels = length(split(GelData{1,:}{3}));
+            Values = zeros(height(GelData), TotalGels);
+            for i = 1:height(GelData)
+                Values(i,:,:,:) = double(string(split(GelData{i,:}{3})));
+            end
+
+            for i = 1:length(Fields)
+                Elutions.(Fields{i}) = Values(:,i);
+            end
+            disp(Elutions')
+        end
+
+        function [Reference, BindingRatio, Bound, Unbound] = FoldEnrichment(~, Elutions, Fields)
+            Reference = Elutions.(Fields{1});
+            Bound = Elutions.(Fields{2});
+            Unbound = Elutions.(Fields{3});
+
+            BindingRatio = Bound ./ Unbound;
         end
     end
 end
