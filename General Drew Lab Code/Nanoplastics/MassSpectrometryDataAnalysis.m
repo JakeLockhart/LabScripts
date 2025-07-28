@@ -114,28 +114,6 @@ classdef MassSpectrometryDataAnalysis
             FileName = FileName + ".xlsx";
             writetable(GelData, FileName);
         end
-
-        function [FlaggedProteins, GelTypes, Parameter] = Plot_InputvsSamples(obj)
-            GelTypes = obj.UI_DefineInputUnboundElution;
-            Parameter = obj.UI_GetVariables(GelTypes);  
-            for i = 1:length(GelTypes)
-
-            end
-
-            [Input, BoundvsUnbound] = CalculatePlotData_InputvsSamples(obj, GelTypes, Parameter)
-            
-
-            FlaggedProteins = 1;
-            %[x, y] = CalculatePlotData_InputvsSamples(obj, Display)
-
-        end
-
-        %function [GelData] = SortGelData(obj, GelData)
-        %   SortingCriteria = UI_getvariable()
-        %end
-        %function CompareGels % setdiff() to compare properties
-        %end
-
     end
 
     %% Initializtion functions
@@ -302,7 +280,7 @@ classdef MassSpectrometryDataAnalysis
         function Parameter = UI_GetVariables(obj, GelTypes)
             Parameter = listdlg("PromptString", "Select properties to view", "SelectionMode", "single", "ListString", fieldnames(obj.Data.(GelTypes.InputGel)));
             Temp_Parameter = fieldnames(obj.Data.(GelTypes.InputGel));
-            Parameter = Temp_Parameter(Parameter);
+            Parameter = string(Temp_Parameter(Parameter));
         end
 
         function GelData = DisplaySingleGelProperties(obj, Display)
@@ -431,19 +409,6 @@ classdef MassSpectrometryDataAnalysis
                     end
                 end
             end
-        end
-
-        function [Input, BoundvsUnbound] = CalculatePlotData_InputvsSamples(obj, GelTypes, Parameter)
-            PlotData.Input = obj.Data.(GelTypes.Input).(Parameter);
-            PlotData.Bound = obj.Data.(GelTypes.Bound).(Parameter);
-            PlotData.Unbound = obj.Data.(GelTypes.Unbound).(Parameter);
-
-            Input = PlotData.Input;
-            BoundvsUnbound = (PlotData.Bound) ./ (PlotData.Bound + PlotData.Unbound);
-        end
-
-        function MaxParameterValue = FindMaxParameterValue(~, GelData, SortingCriteria)
-            
         end
     end
 end
