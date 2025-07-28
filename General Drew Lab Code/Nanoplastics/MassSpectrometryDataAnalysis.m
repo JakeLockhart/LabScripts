@@ -110,7 +110,7 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function CreateExcelFile(obj, GelData, FileName)
+        function CreateExcelFile(~, GelData, FileName)
             FileName = FileName + ".xlsx";
             writetable(GelData, FileName);
         end
@@ -131,7 +131,7 @@ classdef MassSpectrometryDataAnalysis
         end
 
         %function [GelData] = SortGelData(obj, GelData)
-        %   Sortingcriteria = UI_getvariable()
+        %   SortingCriteria = UI_getvariable()
         %end
         %function CompareGels % setdiff() to compare properties
         %end
@@ -323,7 +323,7 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function GelData = DisplayMultipleGelProperties(obj, Display)
+        function [GelData] = DisplayMultipleGelProperties(obj, Display)
             DataSet = cell(1, length(Display.Gel));
             for i = 1:length(Display.Gel)
                 DataSet{i} = obj.Data.(Display.Gel(i));
@@ -335,7 +335,7 @@ classdef MassSpectrometryDataAnalysis
             GelData = obj.ExpandCells(ReducedParameters, Display);
         end
 
-        function CellData = NormalizeTableVars(obj, GelData)
+        function CellData = NormalizeTableVars(~, GelData)
             CellData = GelData;
             Fields = fieldnames(CellData);
             for i = 1:length(Fields)
@@ -354,63 +354,61 @@ classdef MassSpectrometryDataAnalysis
 
         function CombinedTable = MergeTables(obj, DataSet)
             Tables = cellfun(@(d) obj.NormalizeTableVars(d), DataSet, 'UniformOutput', false);
+        
+            for i = 1:numel(Tables)
+                varsToRename = setdiff(Tables{i}.Properties.VariableNames, obj.Keys);
+                newNames = varsToRename + "_T" + string(i);
+                Tables{i} = renamevars(Tables{i}, varsToRename, newNames);
+            end
+        
             CombinedTable = Tables{1};
-            
-            for i = 2:length(Tables)
-                CombinedTable = outerjoin(CombinedTable, Tables{i}, 'Keys', obj.Keys, 'MergeKeys', true, 'Type', 'full');
-            end       
+            for i = 2:numel(Tables)
+                CombinedTable = outerjoin(CombinedTable, Tables{i}, ...
+                    'Keys', obj.Keys, 'MergeKeys', true, 'Type', 'full');
+            end
         end
 
-        function DataSet = MergeTableParameters(obj, DataSet, Display)
+        function DataSet = MergeTableParameters(~, DataSet, Display)
             AllParameters = DataSet.Properties.VariableNames;
-            Suffix = '_left$|_right$|_x\d+$|_CombinedTable$|_Var\d+$';
+            Suffix = '_T\d+$';
             Parameters = unique(regexprep(AllParameters, Suffix, ''));
-            
             for i = 1:length(Parameters)
                 BaseParameter = Parameters{i};
-                FauxParameters = AllParameters(startsWith(AllParameters, BaseParameter) & ~strcmp(AllParameters, BaseParameter));
-                
+                pattern = "^" + BaseParameter + "_T\d+$";
+                FauxParameters = AllParameters(~strcmp(AllParameters, BaseParameter) & ~cellfun('isempty', regexp(AllParameters, pattern)));
                 if isempty(FauxParameters)
                     continue
                 end
-
                 CombinedValue = cell(height(DataSet), 1);
-
                 for row = 1:height(DataSet)
                     CombinedRow = cell(1, length(Display.Gel));
                     for column = 1:length(FauxParameters)
                         ColumnName = FauxParameters{column};
-                        if ismember(ColumnName, DataSet.Properties.VariableNames)
-                            Value = DataSet.(ColumnName)(row);
-                            if iscell(Value)
-                                if isempty(Value) || (numel(Value) == 1 && isempty(Value{1}))
-                                    CombinedRow{column} = NaN;
-                                else
-                                    CombinedRow{column} = Value;
-                                end
-                            elseif isempty(Value)
+                        Value = DataSet.(ColumnName)(row);
+                        if iscell(Value)
+                            if isempty(Value) || (numel(Value) == 1 && isempty(Value{1}))
                                 CombinedRow{column} = NaN;
                             else
                                 CombinedRow{column} = Value;
                             end
-                        else
+                        elseif isempty(Value)
                             CombinedRow{column} = NaN;
+                        else
+                            CombinedRow{column} = Value;
                         end
                     end
-                    % Pad with NaN if fewer columns than gels
                     if numel(FauxParameters) < length(Display.Gel)
                         CombinedRow(numel(FauxParameters)+1:length(Display.Gel)) = {NaN};
                     end
                     CombinedValue{row} = CombinedRow;
                 end
-
                 DataSet.(BaseParameter) = CombinedValue;
-                DataSet(:, FauxParameters) = [];
+                DataSet(:, FauxParameters) = []; 
                 AllParameters = DataSet.Properties.VariableNames;
             end
         end
 
-        function SelectedDataSet = ShowDesiredParameters(obj, DataSet, Display)
+        function SelectedDataSet = ShowDesiredParameters(~, DataSet, Display)
             SelectedDataSet = DataSet(:, Display.Vars);
         end
 
@@ -425,7 +423,7 @@ classdef MassSpectrometryDataAnalysis
             DisplayDataSet = DataSet(:,Display.Vars);
         end
 
-        function DataSet = NaN2Inf(obj, DataSet)
+        function DataSet = NaN2Inf(~, DataSet)
             for i = 1:length(DataSet)
                 for j = 1:length(DataSet{i})
                     if isnan(DataSet{i}{j}(:))
@@ -442,6 +440,10 @@ classdef MassSpectrometryDataAnalysis
 
             Input = PlotData.Input;
             BoundvsUnbound = (PlotData.Bound) ./ (PlotData.Bound + PlotData.Unbound);
+        end
+
+        function MaxParameterValue = FindMaxParameterValue(~, GelData, SortingCriteria)
+            
         end
     end
 end
