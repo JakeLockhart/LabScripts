@@ -95,7 +95,7 @@ classdef MassSpectrometryDataAnalysis
             end
         end
 
-        function [GelData, Display] = GelParameters(obj, SelectionMode) % Solely to show ALL data from plots, no comparison, just display. use sortrows() 
+        function [GelData, Display] = GelParameters(obj, SelectionMode)
             arguments
                 obj
                 SelectionMode string {mustBeMember(SelectionMode, ["single", "multiple"])} = "single";
@@ -115,7 +115,7 @@ classdef MassSpectrometryDataAnalysis
             writetable(GelData, FileName);
         end
 
-        function [GelData, t] = PlotFoldEnrchiment(obj)
+        function [GelData, Proteins, MissingProteins] = PlotFoldEnrchiment(obj)
             GelSet = UI_DefineInputUnboundElution(obj);
             Parameter = UI_GetVariables(obj, GelSet);
             Fields = fieldnames(GelSet);
@@ -127,7 +127,10 @@ classdef MassSpectrometryDataAnalysis
 
             GelData = MultipleGelProperties(obj, Display);
             Elutions = obj.ExtractValuesFromMergedTable(GelData, Fields);
-            [t.Reference, t.BindingRatio, t.Bound, t.Unbound] = obj.FoldEnrichment(Elutions, Fields);
+            Proteins = obj.FoldEnrichment(Elutions, Fields);
+            MissingProteins = obj.MissingFoldEnrichment(Proteins);
+            obj.ScatterMissingProteins(MissingProteins);
+            obj.ScatterProteins(Proteins)
 
         end
     end
@@ -440,12 +443,70 @@ classdef MassSpectrometryDataAnalysis
             disp(Elutions')
         end
 
-        function [Reference, BindingRatio, Bound, Unbound] = FoldEnrichment(~, Elutions, Fields)
-            Reference = Elutions.(Fields{1});
-            Bound = Elutions.(Fields{2});
-            Unbound = Elutions.(Fields{3});
+        function [Proteins] = FoldEnrichment(~, Elutions, Fields)
+            Proteins.Reference = Elutions.(Fields{1});
+            Proteins.Bound = Elutions.(Fields{2});
+            Proteins.Unbound = Elutions.(Fields{3});
 
-            BindingRatio = Bound ./ Unbound;
+            Proteins.BindingRatio = Proteins.Bound ./ Proteins.Unbound;
         end
+
+        function [PointsOfInterest] = ScatterProteins(~, Proteins)
+            figure
+            scatter(Proteins.Reference, Proteins.BindingRatio, 144, 'black.')
+            % Clickable function
+            % PointsOfInterest printout function
+            PointsOfInterest = 1;
+        end
+
+        function [MissingProteins] = MissingFoldEnrichment(~, Proteins)
+            MissingProteins.Reference = Proteins.Reference;
+            LowerBound = min(Proteins.Reference);
+            for i = 1:length(Proteins.Reference)
+                if isnan(Proteins.Reference(i))
+                    MissingProteins.Reference(i) = LowerBound;
+                    MissingProteins.BindingRatio(i) = -1;
+                elseif isnan(Proteins.Bound(i))
+                    MissingProteins.BindingRatio(i) = -2;
+                elseif isnan(Proteins.Unbound(i))
+                    MissingProteins.BindingRatio(i) = -3;
+                else 
+                    continue
+                end
+            end
+        end
+
+        function [PointsOfInterest] = ScatterMissingProteins(~, MissingProteins)
+            figure
+            Jitter = 0.2;
+            MissingProteins.BindingRatio = MissingProteins.BindingRatio + (rand(size(MissingProteins.BindingRatio)) -0.5) * 2 * Jitter;
+            scatter(MissingProteins.Reference, MissingProteins.BindingRatio, 144, 'black.')
+
+            ax = gca;
+            set(gca, 'XScale', 'log')
+            OldLabels = [-1, -2, -3];
+            NewLabels = ["NaN Input", "NaN Bound", "NaN UnBound"];
+            
+            DisplayLabels = OldLabels(ismember(OldLabels, ax.YTick));
+            DisplayLabels = sort(DisplayLabels);
+            ax.YTick = DisplayLabels;
+            Labels = strings(size(DisplayLabels));
+            for i = 1:length(DisplayLabels)
+                Index = OldLabels == DisplayLabels(i);
+                Labels(i) = NewLabels(Index);
+            end
+            ax.YTickLabel = Labels;
+            xlabel("Gel Input (NSAF)")
+            ylim([min(DisplayLabels) - 0.5, max(DisplayLabels) + 0.5])
+            
+            text(0.95, 0.95, 'Jitter applied vertically', 'Units', 'normalized', ...
+                 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top')
+
+            % Clickable function
+            % PointsOfInterest printout function
+            PointsOfInterest = 1;
+        end
+
+
     end
 end
