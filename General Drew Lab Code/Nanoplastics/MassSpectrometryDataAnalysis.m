@@ -127,11 +127,10 @@ classdef MassSpectrometryDataAnalysis
 
             GelData = MultipleGelProperties(obj, Display);
             Elutions = obj.ExtractValuesFromMergedTable(GelData, Fields);
-            Proteins = obj.FoldEnrichment(Elutions, Fields);
+            Proteins = obj.FoldEnrichment(GelData, Elutions, Fields);
             MissingProteins = obj.MissingFoldEnrichment(Proteins);
+            obj.ScatterProteins(Proteins);
             obj.ScatterMissingProteins(MissingProteins);
-            obj.ScatterProteins(Proteins)
-
         end
     end
 
@@ -443,18 +442,68 @@ classdef MassSpectrometryDataAnalysis
             disp(Elutions')
         end
 
-        function [Proteins] = FoldEnrichment(~, Elutions, Fields)
+        function [Proteins] = FoldEnrichment(~, GelData, Elutions, Fields)
             Proteins.Reference = Elutions.(Fields{1});
             Proteins.Bound = Elutions.(Fields{2});
             Proteins.Unbound = Elutions.(Fields{3});
 
             Proteins.BindingRatio = Proteins.Bound ./ Proteins.Unbound;
+            Proteins.Accession = GelData.Accession;
         end
 
         function [PointsOfInterest] = ScatterProteins(~, Proteins)
             figure
-            scatter(Proteins.Reference, Proteins.BindingRatio, 144, 'black.')
-            % Clickable function
+
+            ValidIndex = ~isnan(Proteins.Reference) | ~isnan(Proteins.Bound) | ~isnan(Proteins.Unbound);
+            Proteins.Reference = Proteins.Reference(ValidIndex);
+            Proteins.BindingRatio = Proteins.BindingRatio(ValidIndex);
+            Proteins.Accession = Proteins.Accession(ValidIndex);
+
+            hold on;
+            PlotInfo = scatter(Proteins.Reference, Proteins.BindingRatio, 144, 'black.');
+            yline(2, '--r', '2 Fold or Fold ↑', 'LabelHorizontalAlignment', 'left', 'LabelVerticalAlignment', 'top')
+            set(gca, 'XScale', 'log')
+            xlabel('Gel Input (NSAF)')
+            ylabel('Bound / UnBound (NSAF)')
+            title("Protein Fold Enrichment")
+
+            PlotInfo.CData = repmat([0 0 0], length(Proteins.Reference), 1);
+            PlotInfo.UserData.X = Proteins.Reference;
+            PlotInfo.UserData.Y = Proteins.BindingRatio;
+            PlotInfo.UserData.Accession = Proteins.Accession;
+            PlotInfo.UserData.TextHandles = gobjects(length(Proteins.Reference),1);
+
+            PlotInfo.PickableParts = 'all';
+            PlotInfo.ButtonDownFcn = @(src, event) Toggle(src, event);
+
+            function Toggle(src, event)
+                ClickPoint = event.IntersectionPoint(1:2);
+
+                X = src.UserData.X;
+                Y = src.UserData.Y;
+                A = src.UserData.Accession;
+                C = src.CData;
+                T = src.UserData.TextHandles;
+
+                [~, idx] = min((log10(X) - log10(ClickPoint(1))).^2 + (Y - ClickPoint(2)).^2);
+
+                if all(C(idx,:) == [0 0 0])
+                    C(idx,:) = [1 0 0];
+                    T(idx) = text(X(idx), Y(idx), A{idx}, ...
+                                'FontSize', 8, 'HorizontalAlignment', 'left', ...
+                                'VerticalAlignment', 'bottom', 'PickableParts','none');
+                else
+                    C(idx,:) = [0 0 0];
+                    if isvalid(T(idx))
+                        delete(T(idx));
+                    end
+                    T(idx) = gobjects(1);
+                end
+
+                src.CData = C;
+                src.UserData.TextHandles = T;
+            end
+
             % PointsOfInterest printout function
             PointsOfInterest = 1;
         end
@@ -464,11 +513,14 @@ classdef MassSpectrometryDataAnalysis
             LowerBound = min(Proteins.Reference);
             for i = 1:length(Proteins.Reference)
                 if isnan(Proteins.Reference(i))
+                    MissingProteins.Accession{i} = Proteins.Accession{i};
                     MissingProteins.Reference(i) = LowerBound;
                     MissingProteins.BindingRatio(i) = -1;
                 elseif isnan(Proteins.Bound(i))
+                    MissingProteins.Accession{i} = Proteins.Accession{i};
                     MissingProteins.BindingRatio(i) = -2;
                 elseif isnan(Proteins.Unbound(i))
+                    MissingProteins.Accession{i} = Proteins.Accession{i};
                     MissingProteins.BindingRatio(i) = -3;
                 else 
                     continue
@@ -484,6 +536,8 @@ classdef MassSpectrometryDataAnalysis
 
             ax = gca;
             set(gca, 'XScale', 'log')
+            axis tight; 
+
             OldLabels = [-1, -2, -3];
             NewLabels = ["NaN Input", "NaN Bound", "NaN UnBound"];
             
@@ -499,14 +553,18 @@ classdef MassSpectrometryDataAnalysis
             xlabel("Gel Input (NSAF)")
             ylim([min(DisplayLabels) - 0.5, max(DisplayLabels) + 0.5])
             
-            text(0.95, 0.95, 'Jitter applied vertically', 'Units', 'normalized', ...
+            text(1, 1, 'Jitter applied vertically', 'Units', 'normalized', ...
                  'HorizontalAlignment', 'right', 'VerticalAlignment', 'top')
+
+            for i = 1:length(MissingProteins.Reference)
+                text(MissingProteins.Reference(i), MissingProteins.BindingRatio(i), string(MissingProteins.Accession{i}), ...
+                     'FontSize', 8, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom')
+            end
 
             % Clickable function
             % PointsOfInterest printout function
             PointsOfInterest = 1;
         end
-
 
     end
 end
