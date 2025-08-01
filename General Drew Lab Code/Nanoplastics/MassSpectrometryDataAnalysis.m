@@ -114,9 +114,7 @@ classdef MassSpectrometryDataAnalysis
     %% Constructor
     methods
         function obj = MassSpectrometryDataAnalysis()
-            addpath("C:\Workspace\LabScripts\Functions");
-            zap
-            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx", "TroubleShoot", "C:\Users\jsl5865\Desktop\OneDrive_1_7-15-2025");
+            obj.DirectoryInfo = MassSpectrometryDataAnalysis.FindFiles("xlsx", "SingleFolder");
             obj.MatLabVariables = MassSpectrometryDataAnalysis.MakeValidVariables(obj);
             obj = ReadData(obj);
             obj = Add_SAF_NSAF(obj);
@@ -183,6 +181,50 @@ classdef MassSpectrometryDataAnalysis
             end
 
             DirectoryInfo = FileLookup(FileType, SearchMode, ConstantAddress);
+
+            function Lookup = FileLookup(FileType, SearchMode, ConstantAddress)
+                %% Define the file structure
+                    Lookup.FileType = strcat('*.', FileType);   % Choose file type
+                
+                %% Select the folder
+                    switch SearchMode                                                               % SearchMode = Constant filepath for testing
+                        case 'TroubleShoot'                                                             % User input: Troubleshoot
+                            if ~isfolder(ConstantAddress)                                                   % Validate that user defined path exists and is valid
+                                error("For 'TroubleShoot' mode, you must provide a" + ...                   % Throw error if invalid
+                                    " valid folder path as the third argument.");      
+                            end
+                                Lookup.FolderAddress = ConstantAddress;                                     % Set folder address to user defined path
+                                searchPattern = fullfile(Lookup.FolderAddress, Lookup.FileType);            % Create a search pattern based on folder address
+                        case 'SingleFile'                                                               % User input: SingleFile
+                            [FileName, FolderPath] = uigetfile(Lookup.FileType, 'Select a file');           % Prompt user to select a single file
+                            if isequal(FileName, 0)                                                         % Validate file selection 
+                                error("No file selected");                                                  % Throw error if invalid
+                            end
+                            Lookup.FolderAddress = FolderPath;                                              % Set folder address to user defined path
+                            searchPattern = fullfile(Lookup.FolderAddress, FileName);                       % Create a search pattern based on folder address
+                        case 'SingleFolder'                                                             % User input: SingleFolder
+                            Lookup.FolderAddress = uigetdir('*.*', 'Select a folder');                      % Prompt user to select a folder
+                            if isequal(Lookup.FolderAddress, 0)                                             % Validate folder selection
+                                error('No folder selected');                                                % Throw error if invalid
+                            end
+                            searchPattern = fullfile(Lookup.FolderAddress, Lookup.FileType);                % Create a search pattern based on an individual folder
+                        case 'AllSubFolders'                                                            % User input: Troubleshoot
+                            Lookup.FolderAddress = uigetdir('*.*', 'Select a folder');                      % Prompt user to select a folder
+                            if isequal(Lookup.FolderAddress, 0)                                             % Validate folder selection
+                                error('No folder selected');                                                % Throw error if invalid
+                            end
+                            searchPattern = fullfile(Lookup.FolderAddress, '**', Lookup.FileType);          % Create a search pattern based on all sub folders
+                    end
+
+                %% Find All FileType within defined folder
+                    Lookup.AllFiles = searchPattern;                                                                    % Create general file path
+                    Lookup.FolderInfo = dir(searchPattern);                                                             % Identify the folder directory
+                    Lookup.FileCount = length(Lookup.FolderInfo);                                                       % Determine the number of files in this folder
+                    Lookup.FolderCount = length(unique({Lookup.FolderInfo.folder}));                                    % Determine the number of folders 
+                    [~, Lookup.CurrentFolder] = fileparts(Lookup.FolderAddress);                                        % Collect folder information
+                    Lookup.Path = arrayfun(@(x) fullfile(x.folder, x.name), Lookup.FolderInfo, 'UniformOutput', false); % Identify the file path
+            end
+
         end
 
         function MatLabVariables = MakeValidVariables(obj)
